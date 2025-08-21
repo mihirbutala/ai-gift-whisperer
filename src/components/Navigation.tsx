@@ -27,6 +27,18 @@ export const Navigation = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             <Link 
+              to="/ai-search" 
+              className={`transition-colors ${isActive('/ai-search') ? 'text-accent font-medium' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              AI Search
+            </Link>
+            <Link 
+              to="/product-quote" 
+              className={`transition-colors ${isActive('/product-quote') ? 'text-accent font-medium' : 'text-muted-foreground hover:text-foreground'}`}
+            >
+              Product Quote
+            </Link>
+            <Link 
               to="/features" 
               className={`transition-colors ${isActive('/features') ? 'text-accent font-medium' : 'text-muted-foreground hover:text-foreground'}`}
             >
@@ -64,6 +76,20 @@ export const Navigation = () => {
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="md:hidden border-t border-border/50 py-4 space-y-4">
+            <Link 
+              to="/ai-search" 
+              className={`block transition-colors ${isActive('/ai-search') ? 'text-accent font-medium' : 'text-muted-foreground hover:text-foreground'}`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              AI Search
+            </Link>
+            <Link 
+              to="/product-quote" 
+              className={`block transition-colors ${isActive('/product-quote') ? 'text-accent font-medium' : 'text-muted-foreground hover:text-foreground'}`}
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Product Quote
+            </Link>
             <Link 
               to="/features" 
               className={`block transition-colors ${isActive('/features') ? 'text-accent font-medium' : 'text-muted-foreground hover:text-foreground'}`}
