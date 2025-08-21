@@ -300,8 +300,6 @@ CRITICAL: Return ONLY the JSON object. No explanations, no markdown, no addition
             maxOutputTokens: 2048,
             candidateCount: 1,
             stopSequences: []
-            candidateCount: 1,
-            stopSequences: []
           },
           safetySettings: [
             {
