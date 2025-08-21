@@ -50,15 +50,18 @@
     --ring: 240 100% 65%;
 
     /* Gradients for modern AI feel */
-    --gradient-primary: linear-gradient(135deg, hsl(240 100% 65%) 0%, hsl(260 85% 60%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(25 95% 65%) 0%, hsl(45 95% 65%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(240 100% 97%) 0%, hsl(260 85% 97%) 50%, hsl(25 95% 97%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(240 100% 65%) 0%, hsl(260 85% 60%) 50%, hsl(280 90% 70%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(25 95% 65%) 0%, hsl(45 95% 65%) 50%, hsl(320 85% 70%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(240 100% 97%) 0%, hsl(260 85% 97%) 25%, hsl(280 90% 98%) 50%, hsl(25 95% 97%) 75%, hsl(320 85% 98%) 100%);
+    --gradient-futuristic: linear-gradient(45deg, hsl(240 100% 65%) 0%, hsl(280 90% 70%) 25%, hsl(320 85% 70%) 50%, hsl(25 95% 65%) 75%, hsl(45 95% 65%) 100%);
+    --gradient-glow: radial-gradient(circle at center, hsl(240 100% 75% / 0.3) 0%, transparent 70%);
     
     /* Shadows for depth */
-    --shadow-soft: 0 4px 12px hsla(215 25% 15% / 0.08);
-    --shadow-medium: 0 8px 24px hsla(215 25% 15% / 0.12);
-    --shadow-accent: 0 8px 24px hsla(25 95% 65% / 0.3);
-    --shadow-primary: 0 8px 24px hsla(240 100% 65% / 0.25);
+    --shadow-soft: 0 4px 12px hsla(215 25% 15% / 0.08), 0 0 20px hsla(240 100% 75% / 0.1);
+    --shadow-medium: 0 8px 24px hsla(215 25% 15% / 0.12), 0 0 40px hsla(240 100% 75% / 0.15);
+    --shadow-accent: 0 8px 24px hsla(25 95% 65% / 0.3), 0 0 40px hsla(25 95% 65% / 0.2);
+    --shadow-primary: 0 8px 24px hsla(240 100% 65% / 0.25), 0 0 40px hsla(240 100% 65% / 0.2);
+    --shadow-futuristic: 0 0 30px hsla(240 100% 75% / 0.4), 0 0 60px hsla(280 90% 70% / 0.3), 0 0 90px hsla(320 85% 70% / 0.2);
 
     --radius: 0.75rem;
 
@@ -120,15 +123,18 @@
     --ring: 240 100% 70%;
 
     /* Dark mode gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(240 100% 70%) 0%, hsl(260 85% 65%) 100%);
-    --gradient-accent: linear-gradient(135deg, hsl(25 95% 70%) 0%, hsl(45 95% 70%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(215 25% 10%) 0%, hsl(240 25% 12%) 50%, hsl(25 15% 10%) 100%);
+    --gradient-primary: linear-gradient(135deg, hsl(240 100% 70%) 0%, hsl(260 85% 65%) 50%, hsl(280 90% 75%) 100%);
+    --gradient-accent: linear-gradient(135deg, hsl(25 95% 70%) 0%, hsl(45 95% 70%) 50%, hsl(320 85% 75%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(215 25% 10%) 0%, hsl(240 25% 12%) 25%, hsl(280 25% 14%) 50%, hsl(25 15% 10%) 75%, hsl(320 25% 12%) 100%);
+    --gradient-futuristic: linear-gradient(45deg, hsl(240 100% 70%) 0%, hsl(280 90% 75%) 25%, hsl(320 85% 75%) 50%, hsl(25 95% 70%) 75%, hsl(45 95% 70%) 100%);
+    --gradient-glow: radial-gradient(circle at center, hsl(240 100% 80% / 0.4) 0%, transparent 70%);
     
     /* Adjusted shadows for dark mode */
-    --shadow-soft: 0 4px 12px hsla(0 0% 0% / 0.3);
-    --shadow-medium: 0 8px 24px hsla(0 0% 0% / 0.4);
-    --shadow-accent: 0 8px 24px hsla(25 95% 70% / 0.3);
-    --shadow-primary: 0 8px 24px hsla(240 100% 70% / 0.3);
+    --shadow-soft: 0 4px 12px hsla(0 0% 0% / 0.3), 0 0 20px hsla(240 100% 80% / 0.15);
+    --shadow-medium: 0 8px 24px hsla(0 0% 0% / 0.4), 0 0 40px hsla(240 100% 80% / 0.2);
+    --shadow-accent: 0 8px 24px hsla(25 95% 70% / 0.3), 0 0 40px hsla(25 95% 70% / 0.25);
+    --shadow-primary: 0 8px 24px hsla(240 100% 70% / 0.3), 0 0 40px hsla(240 100% 70% / 0.25);
+    --shadow-futuristic: 0 0 30px hsla(240 100% 80% / 0.5), 0 0 60px hsla(280 90% 75% / 0.4), 0 0 90px hsla(320 85% 75% / 0.3);
 
     --sidebar-background: 215 25% 6%;
     --sidebar-foreground: 215 15% 85%;
@@ -148,5 +154,49 @@
 
   body {
     @apply bg-background text-foreground;
+    background-attachment: fixed;
+    background-image: var(--gradient-glow), var(--gradient-hero);
+  }
+
+  /* Futuristic animations */
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: var(--shadow-primary); }
+    50% { box-shadow: var(--shadow-futuristic); }
+  }
+
+  @keyframes gradient-shift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  /* Futuristic utility classes */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 3s ease-in-out infinite;
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient-shift 4s ease infinite;
+  }
+
+  .glass-effect {
+    backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .dark .glass-effect {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 }

@@ -12,18 +12,18 @@ const Index = () => {
       <Navigation />
       
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-20 lg:py-32">
+      <section className="relative overflow-hidden py-20 lg:py-32 bg-gradient-glow">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div className="space-y-8">
               <div className="space-y-4">
-                <div className="inline-flex items-center gap-2 bg-accent-soft text-accent px-4 py-2 rounded-full text-sm font-medium">
+                <div className="inline-flex items-center gap-2 glass-effect text-accent px-6 py-3 rounded-full text-sm font-medium animate-pulse-glow">
                   <Sparkles className="h-4 w-4" />
                   AI-Powered Gifting Solutions
                 </div>
                 <h1 className="text-4xl lg:text-6xl font-bold text-foreground leading-tight">
                   Revolutionize Your{" "}
-                  <span className="bg-gradient-primary bg-clip-text text-transparent">
+                  <span className="bg-gradient-futuristic bg-clip-text text-transparent animate-gradient">
                     Pharmaceutical Gifting
                   </span>
                 </h1>
@@ -33,11 +33,11 @@ const Index = () => {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4">
-                <Button variant="hero" size="lg" className="group">
+                <Button variant="hero" size="lg" className="group px-12 py-6 text-lg font-semibold">
                   <Search className="h-5 w-5 group-hover:scale-110 transition-transform" />
                   Start AI Search
                 </Button>
-                <Button variant="accent" size="lg" className="group">
+                <Button variant="accent" size="lg" className="group px-12 py-6 text-lg font-semibold">
                   <Upload className="h-5 w-5 group-hover:scale-110 transition-transform" />
                   Get Quote
                 </Button>
@@ -54,21 +54,21 @@ const Index = () => {
             </div>
             
             <div className="lg:order-2 relative">
-              <div className="relative z-10">
+              <div className="relative z-10 animate-float">
                 <img
                   src={heroImage}
                   alt="AI Gifting Platform Dashboard"
-                  className="rounded-2xl shadow-medium w-full h-auto"
+                  className="rounded-2xl shadow-futuristic w-full h-auto"
                 />
               </div>
-              <div className="absolute inset-0 bg-gradient-primary opacity-20 rounded-2xl blur-3xl scale-105" />
+              <div className="absolute inset-0 bg-gradient-futuristic opacity-30 rounded-2xl blur-3xl scale-110 animate-pulse-glow" />
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="py-20 bg-background/80 backdrop-blur-sm">
+      <section className="py-20 glass-effect">
         <div className="container mx-auto px-4 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
@@ -81,9 +81,9 @@ const Index = () => {
           
           <div className="grid lg:grid-cols-2 gap-12">
             {/* AI Gift Search */}
-            <Card className="p-8 shadow-soft border-0 bg-background/60 backdrop-blur-sm">
+            <Card className="p-8 shadow-futuristic border-0 glass-effect hover:shadow-primary transition-all duration-500 hover:scale-[1.02]">
               <div className="flex items-center gap-4 mb-6">
-                <div className="p-3 bg-gradient-primary rounded-xl">
+                <div className="p-3 bg-gradient-futuristic rounded-xl animate-pulse-glow">
                   <Search className="h-6 w-6 text-primary-foreground" />
                 </div>
                 <div>
@@ -95,9 +95,9 @@ const Index = () => {
             </Card>
             
             {/* Product Quote */}
-            <Card className="p-8 shadow-soft border-0 bg-background/60 backdrop-blur-sm">
+            <Card className="p-8 shadow-futuristic border-0 glass-effect hover:shadow-accent transition-all duration-500 hover:scale-[1.02]">
               <div className="flex items-center gap-4 mb-6">
-                <div className="p-3 bg-gradient-accent rounded-xl">
+                <div className="p-3 bg-gradient-accent rounded-xl animate-pulse-glow">
                   <Upload className="h-6 w-6 text-accent-foreground" />
                 </div>
                 <div>

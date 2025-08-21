@@ -6,15 +6,15 @@ export const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
-    <nav className="relative z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
+    <nav className="relative z-50 glass-effect border-b border-border/50">
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-primary rounded-lg">
+            <div className="p-2 bg-gradient-futuristic rounded-lg animate-pulse-glow">
               <Sparkles className="h-6 w-6 text-primary-foreground" />
             </div>
-            <span className="text-xl font-bold text-foreground">GiftAI Pro</span>
+            <span className="text-xl font-bold bg-gradient-futuristic bg-clip-text text-transparent">GiftAI Pro</span>
           </div>
 
           {/* Desktop Navigation */}
