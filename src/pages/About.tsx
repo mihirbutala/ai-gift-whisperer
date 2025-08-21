@@ -156,7 +156,7 @@ const About = () => {
                   Our Story
                 </h2>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  Founded in 2019 by a team of pharmaceutical industry veterans and AI experts, GiftAI Pro was born from a simple observation: pharmaceutical gifting in India was stuck in the past.
+                  Founded in 2019 by a team of pharmaceutical industry veterans and AI experts, supergifter.ai was born from a simple observation: pharmaceutical gifting in India was stuck in the past.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
                   We saw companies struggling with compliance, spending hours researching appropriate gifts, and missing opportunities to build meaningful relationships with healthcare professionals. Our founders, having worked in the Indian pharmaceutical industry for decades, understood these pain points intimately.
@@ -337,8 +337,8 @@ const About = () => {
                 <div>
                   <h3 className="font-semibold text-foreground mb-2">Email Us</h3>
                   <p className="text-sm text-muted-foreground">
-                    hello@giftaipro.in<br />
-                    support@giftaipro.in
+                    hello@supergifter.ai<br />
+                    support@supergifter.ai
                   </p>
                 </div>
               </div>

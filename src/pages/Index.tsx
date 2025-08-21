@@ -14,7 +14,7 @@ const Index = () => {
           {/* Title */}
           <div className="space-y-4">
             <h1 className="text-4xl lg:text-6xl font-bold text-foreground leading-tight">
-              GiftAI Pro
+              supergifter.ai
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
               AI-Powered Pharmaceutical Gifting Platform for India
