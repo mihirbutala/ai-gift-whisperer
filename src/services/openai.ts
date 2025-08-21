@@ -23,7 +23,7 @@ export class OpenAIService {
 
   constructor() {
     this.apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-    this.apiUrl = import.meta.env.VITE_OPENAI_API_URL || 'https://api.openai.com/v1';
+    this.apiUrl = (import.meta.env.VITE_OPENAI_API_URL || 'https://api.openai.com/v1').replace(/\/$/, '');
     
     if (!this.apiKey) {
       console.warn('OpenAI API key not found. Please set VITE_OPENAI_API_KEY in your environment variables.');
