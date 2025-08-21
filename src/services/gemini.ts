@@ -190,7 +190,7 @@ You must respond with ONLY a valid JSON object, no other text.
 Required JSON structure:
 {
   "productName": "Identified or suggested product name",
-  "suggestedPrice": "₹2,500",
+  "suggestedPrice": "₹2,500-3,800",
   "marketComparison": "5% below Indian market average",
   "confidence": 85,
   "recommendations": [
@@ -200,7 +200,7 @@ Required JSON structure:
   ],
   "category": "Product category",
   "features": ["Key feature 1", "Key feature 2", "Key feature 3"],
-  "competitorPrices": ["Competitor 1: ₹X,XXX", "Competitor 2: ₹X,XXX", "Market range: ₹X,XXX-X,XXX"]
+  "competitorPrices": ["Competitor 1: ₹2,800-3,200", "Competitor 2: ₹3,500-4,000", "Market range: ₹2,500-4,500"]
 }
 
 Requirements:
@@ -209,7 +209,9 @@ Requirements:
 - Consider regional pricing variations
 - Include bulk pricing options
 - Ensure regulatory compliance
-- Price range: ₹1,000 to ₹15,000
+- Use price ranges (e.g., ₹2,500-3,800) instead of single prices
+- All prices should be in INR with proper formatting
+- Price ranges should reflect market reality: ₹1,000 to ₹15,000
 
 CRITICAL: Return ONLY the JSON object. No explanations, no markdown, no additional text.
 `;
@@ -244,7 +246,7 @@ CRITICAL: Return ONLY the JSON object. No explanations, no markdown, no addition
   private validateProductQuoteResult(result: any): ProductQuoteResult {
     return {
       productName: result.productName || 'Analyzed Product',
-      suggestedPrice: result.suggestedPrice || '₹2,500',
+      suggestedPrice: result.suggestedPrice || 'Price analysis unavailable',
       marketComparison: result.marketComparison || 'Competitive with market average',
       confidence: typeof result.confidence === 'number' ? Math.min(Math.max(result.confidence, 1), 100) : 85,
       recommendations: Array.isArray(result.recommendations) ? result.recommendations.slice(0, 5) : [],
@@ -257,7 +259,7 @@ CRITICAL: Return ONLY the JSON object. No explanations, no markdown, no addition
   private getFallbackProductQuote(): ProductQuoteResult {
     return {
       productName: "Medical Gift Product",
-      suggestedPrice: "₹3,200",
+      suggestedPrice: "₹2,500-4,000",
       marketComparison: "8% below Indian market average",
       confidence: 78,
       recommendations: [
@@ -267,7 +269,7 @@ CRITICAL: Return ONLY the JSON object. No explanations, no markdown, no addition
       ],
       category: "Medical Accessories",
       features: ["GST Compliant", "Pharmaceutical Grade", "Indian Market Optimized"],
-      competitorPrices: ["Market Leader: ₹3,800", "Local Supplier: ₹2,900", "Import Range: ₹3,500-4,500"]
+      competitorPrices: ["Market Leader: ₹3,500-4,200", "Local Supplier: ₹2,800-3,200", "Import Range: ₹4,000-5,500"]
     };
   }
 
