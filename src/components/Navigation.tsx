@@ -1,9 +1,13 @@
 import { Sparkles, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 
 export const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const location = useLocation();
+
+  const isActive = (path: string) => location.pathname === path;
 
   return (
     <nav className="relative z-50 glass-effect border-b border-border/50">
@@ -11,24 +15,35 @@ export const Navigation = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-gradient-futuristic rounded-lg animate-pulse-glow">
-              <Sparkles className="h-6 w-6 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-bold bg-gradient-futuristic bg-clip-text text-transparent">GiftAI Pro</span>
-            <span className="text-xs bg-gradient-accent bg-clip-text text-transparent font-medium">India</span>
+            <Link to="/" className="flex items-center gap-3">
+              <div className="p-2 bg-gradient-futuristic rounded-lg animate-pulse-glow">
+                <Sparkles className="h-6 w-6 text-primary-foreground" />
+              </div>
+              <span className="text-xl font-bold bg-gradient-futuristic bg-clip-text text-transparent">GiftAI Pro</span>
+              <span className="text-xs bg-gradient-accent bg-clip-text text-transparent font-medium">India</span>
+            </Link>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
-            <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
+            <Link 
+              to="/features" 
+              className={`transition-colors ${isActive('/features') ? 'text-accent font-medium' : 'text-muted-foreground hover:text-foreground'}`}
+            >
               Features
-            </a>
-            <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">
+            </Link>
+            <Link 
+              to="/pricing" 
+              className={`transition-colors ${isActive('/pricing') ? 'text-accent font-medium' : 'text-muted-foreground hover:text-foreground'}`}
+            >
               Pricing
-            </a>
-            <a href="#about" className="text-muted-foreground hover:text-foreground transition-colors">
+            </Link>
+            <Link 
+              to="/about" 
+              className={`transition-colors ${isActive('/about') ? 'text-accent font-medium' : 'text-muted-foreground hover:text-foreground'}`}
+            >
               About
-            </a>
+            </Link>
             <Button variant="outline" size="sm">
               Sign In
             </Button>
@@ -49,15 +64,27 @@ export const Navigation = () => {
         {/* Mobile Navigation */}
         {isMenuOpen && (
           <div className="md:hidden border-t border-border/50 py-4 space-y-4">
-            <a href="#features" className="block text-muted-foreground hover:text-foreground">
+            <Link 
+              to="/features" 
+              className={`block transition-colors ${isActive('/features') ? 'text-accent font-medium' : 'text-muted-foreground hover:text-foreground'}`}
+              onClick={() => setIsMenuOpen(false)}
+            >
               Features
-            </a>
-            <a href="#pricing" className="block text-muted-foreground hover:text-foreground">
+            </Link>
+            <Link 
+              to="/pricing" 
+              className={`block transition-colors ${isActive('/pricing') ? 'text-accent font-medium' : 'text-muted-foreground hover:text-foreground'}`}
+              onClick={() => setIsMenuOpen(false)}
+            >
               Pricing
-            </a>
-            <a href="#about" className="block text-muted-foreground hover:text-foreground">
+            </Link>
+            <Link 
+              to="/about" 
+              className={`block transition-colors ${isActive('/about') ? 'text-accent font-medium' : 'text-muted-foreground hover:text-foreground'}`}
+              onClick={() => setIsMenuOpen(false)}
+            >
               About
-            </a>
+            </Link>
             <div className="flex gap-3 pt-4">
               <Button variant="outline" size="sm" className="flex-1">
                 Sign In
