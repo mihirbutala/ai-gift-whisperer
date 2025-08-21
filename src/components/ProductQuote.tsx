@@ -174,86 +174,56 @@ export const ProductQuote = () => {
             AI Pricing Analysis
           </div>
 
-          <Card className="p-4 shadow-soft border-border/50 bg-background/60 backdrop-blur-sm">
-            <div className="space-y-4">
-              {/* Product Info */}
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-semibold text-foreground">{quoteResult.productName}</h4>
-                  <div className="flex items-center gap-2 mt-1">
-                    <p className="text-xs text-muted-foreground">AI-analyzed product</p>
-                    <Badge variant="outline" className="text-xs bg-accent-soft border-accent/20">
-                      {quoteResult.category}
-                    </Badge>
-                  </div>
-                </div>
-                <Badge variant="outline" className="bg-success/10 border-success/20 text-success">
-                  {quoteResult.confidence}% confidence
-                </Badge>
+          <div className="p-4 bg-background border border-border rounded-lg font-mono text-sm">
+            <div className="space-y-3">
+              <div>
+                <strong>Product Name:</strong> {quoteResult.productName}
               </div>
-
-              {/* Pricing */}
-              <div className="grid grid-cols-2 gap-4 p-3 bg-muted/30 rounded-lg">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-accent">{quoteResult.suggestedPrice}</div>
-                  <div className="text-xs text-muted-foreground">Suggested Price (INR)</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-sm font-semibold text-success">{quoteResult.marketComparison}</div>
-                  <div className="text-xs text-muted-foreground">vs. Indian Market Average</div>
-                </div>
+              <div>
+                <strong>Category:</strong> {quoteResult.category}
               </div>
-
-              {/* Features */}
+              <div>
+                <strong>Suggested Price:</strong> {quoteResult.suggestedPrice}
+              </div>
+              <div>
+                <strong>Market Comparison:</strong> {quoteResult.marketComparison}
+              </div>
+              <div>
+                <strong>Confidence:</strong> {quoteResult.confidence}%
+              </div>
+              
               {quoteResult.features.length > 0 && (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-xs font-medium text-foreground">
-                    <Sparkles className="h-3 w-3" />
-                    Key Features
-                  </div>
-                  <div className="flex flex-wrap gap-1">
+                <div>
+                  <strong>Key Features:</strong>
+                  <div className="ml-4 mt-1">
                     {quoteResult.features.map((feature, index) => (
-                      <Badge key={index} variant="outline" className="text-xs bg-primary/10 border-primary/20 text-primary">
-                        {feature}
-                      </Badge>
+                      <div key={index}>• {feature}</div>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Competitor Prices */}
               {quoteResult.competitorPrices.length > 0 && (
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-xs font-medium text-foreground">
-                    <TrendingUp className="h-3 w-3" />
-                    Market Comparison
-                  </div>
-                  <div className="space-y-1">
+                <div>
+                  <strong>Market Comparison:</strong>
+                  <div className="ml-4 mt-1">
                     {quoteResult.competitorPrices.map((price, index) => (
-                      <div key={index} className="text-xs text-muted-foreground p-2 bg-muted/20 rounded">
-                        {price}
-                      </div>
+                      <div key={index}>• {price}</div>
                     ))}
                   </div>
                 </div>
               )}
 
-              {/* Recommendations */}
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-xs font-medium text-foreground">
-                  <FileText className="h-3 w-3" />
-                  Recommendations
-                </div>
-                <div className="space-y-1">
+              <div>
+                <strong>Recommendations:</strong>
+                <div className="ml-4 mt-1">
                   {quoteResult.recommendations.map((rec, index) => (
-                    <div key={index} className="text-xs text-muted-foreground p-2 bg-muted/20 rounded">
-                      • {rec}
-                    </div>
+                    <div key={index}>• {rec}</div>
                   ))}
                 </div>
               </div>
             </div>
-          </Card>
+          </div>
         </div>
       )}
 
