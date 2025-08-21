@@ -22,26 +22,26 @@ export const AIGiftSearch = () => {
   const mockResults: GiftIdea[] = [
     {
       id: 1,
-      title: "Premium Medical Conference Package",
-      description: "Complete package including branded notebooks, high-quality pens, and educational materials perfect for pharmaceutical conferences.",
+      title: "Premium Medical Conference Package for India",
+      description: "Complete package including branded notebooks, high-quality pens, and educational materials perfect for Indian pharmaceutical conferences and medical events.",
       category: "Conference Gifts",
-      price: "$45-65",
+      price: "₹3,500-5,200",
       rating: 4.8
     },
     {
       id: 2,
-      title: "Wellness & Health Gift Set",
-      description: "Curated collection of wellness products including stress-relief items, healthy snacks, and branded water bottles.",
+      title: "Ayurvedic Wellness & Health Gift Set",
+      description: "Curated collection of wellness products including Ayurvedic stress-relief items, healthy Indian snacks, and branded copper water bottles.",
       category: "Wellness",
-      price: "$35-50",
+      price: "₹2,800-4,000",
       rating: 4.6
     },
     {
       id: 3,
-      title: "Educational Medical Literature",
-      description: "Latest pharmaceutical research books and journals tailored to specific medical specialties and interests.",
+      title: "Indian Medical Literature & Research",
+      description: "Latest pharmaceutical research books, Indian medical journals, and publications tailored to Indian healthcare specialties and AYUSH practices.",
       category: "Educational",
-      price: "$25-40",
+      price: "₹2,000-3,200",
       rating: 4.9
     }
   ];
@@ -70,7 +70,7 @@ export const AIGiftSearch = () => {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
-            placeholder="Describe your gifting needs (e.g., 'gifts for cardiology conference attendees')"
+            placeholder="Describe your gifting needs (e.g., 'gifts for Indian cardiology conference attendees')"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={handleKeyPress}
@@ -152,7 +152,7 @@ export const AIGiftSearch = () => {
             <Sparkles className="h-8 w-8 text-accent mx-auto" />
             <h4 className="text-sm font-medium text-foreground">Ready to find the perfect gifts?</h4>
             <p className="text-xs text-muted-foreground">
-              Try searches like "gifts for medical conference" or "appreciation gifts for hospital staff"
+              Try searches like "gifts for Indian medical conference" or "appreciation gifts for Indian hospital staff"
             </p>
           </div>
         </Card>

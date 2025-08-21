@@ -28,7 +28,7 @@ const Index = () => {
                   </span>
                 </h1>
                 <p className="text-lg text-muted-foreground leading-relaxed">
-                  Discover personalized gift ideas and get competitive quotes instantly with our AI-driven platform designed specifically for pharmaceutical professionals.
+                  Discover personalized gift ideas and get competitive quotes in INR instantly with our AI-driven platform designed specifically for Indian pharmaceutical professionals.
                 </p>
               </div>
               
@@ -46,10 +46,10 @@ const Index = () => {
               <div className="flex items-center gap-6 text-sm text-muted-foreground">
                 <div className="flex items-center gap-2">
                   <Heart className="h-4 w-4 text-accent" />
-                  <span>Trusted by 500+ companies</span>
+                  <span>Trusted by 500+ Indian companies</span>
                 </div>
                 <div className="h-4 w-px bg-border" />
-                <div>AI-powered recommendations</div>
+                <div>Made for Indian market</div>
               </div>
             </div>
             
@@ -72,10 +72,10 @@ const Index = () => {
         <div className="container mx-auto px-4 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              Powerful Features for Modern Gifting
+              Powerful Features for Indian Pharmaceutical Gifting
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Our AI-powered platform streamlines your gifting process with intelligent search and competitive pricing.
+              Our AI-powered platform streamlines your gifting process with intelligent search and competitive INR pricing for the Indian market.
             </p>
           </div>
           
@@ -88,7 +88,7 @@ const Index = () => {
                 </div>
                 <div>
                   <h3 className="text-2xl font-semibold text-foreground">AI Gift Ideas</h3>
-                  <p className="text-muted-foreground">Pharmaceutical-focused recommendations</p>
+                  <p className="text-muted-foreground">Indian pharmaceutical-focused recommendations</p>
                 </div>
               </div>
               <AIGiftSearch />
@@ -102,7 +102,7 @@ const Index = () => {
                 </div>
                 <div>
                   <h3 className="text-2xl font-semibold text-foreground">Product Quotes</h3>
-                  <p className="text-muted-foreground">Instant competitive pricing</p>
+                  <p className="text-muted-foreground">Instant competitive pricing in INR</p>
                 </div>
               </div>
               <ProductQuote />
