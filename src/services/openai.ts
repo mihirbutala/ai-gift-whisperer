@@ -31,7 +31,7 @@ export class OpenAIService {
   }
 
   async generateGiftRecommendations(query: string): Promise<GiftRecommendation[]> {
-    return this.generateGiftRecommendationsWithRetry(query, 3, 1000);
+    return this.generateGiftRecommendationsWithRetry(query, 5, 2000);
   }
 
   private async generateGiftRecommendationsWithRetry(
