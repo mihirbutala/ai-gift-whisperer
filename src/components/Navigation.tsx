@@ -19,7 +19,6 @@ export const Navigation = () => {
               <div className="p-2 bg-gradient-futuristic rounded-lg animate-pulse-glow">
                 <Sparkles className="h-6 w-6 text-primary-foreground" />
               </div>
-              <span className="text-xl font-bold bg-gradient-futuristic bg-clip-text text-transparent">GiftAI Pro</span>
               <span className="text-xl font-bold bg-gradient-futuristic bg-clip-text text-transparent">supergifter.ai</span>
               <span className="text-xs bg-gradient-accent bg-clip-text text-transparent font-medium">India</span>
             </Link>
