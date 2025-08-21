@@ -25,7 +25,7 @@ export class GeminiService {
 
   constructor() {
     this.apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
-    this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+    this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
     
     if (!this.apiKey) {
       console.warn('Gemini API key not found. Please set VITE_GEMINI_API_KEY in your environment variables.');
