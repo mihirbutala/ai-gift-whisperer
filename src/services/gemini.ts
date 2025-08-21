@@ -1,7 +1,9 @@
-interface OpenAIResponse {
-  choices: {
-    message: {
-      content: string;
+interface GeminiResponse {
+  candidates: {
+    content: {
+      parts: {
+        text: string;
+      }[];
     };
   }[];
 }
@@ -17,16 +19,16 @@ interface GiftRecommendation {
   availability: string;
 }
 
-export class OpenAIService {
+export class GeminiService {
   private apiKey: string;
   private apiUrl: string;
 
   constructor() {
-    this.apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-    this.apiUrl = (import.meta.env.VITE_OPENAI_API_URL || 'https://api.openai.com/v1').replace(/\/$/, '');
+    this.apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
     
     if (!this.apiKey) {
-      console.warn('OpenAI API key not found. Please set VITE_OPENAI_API_KEY in your environment variables.');
+      console.warn('Gemini API key not found. Please set VITE_GEMINI_API_KEY in your environment variables.');
     }
   }
 
@@ -40,32 +42,47 @@ export class OpenAIService {
     delay: number = 1000
   ): Promise<GiftRecommendation[]> {
     if (!this.apiKey) {
-      throw new Error('OpenAI API key is not configured');
+      throw new Error('Gemini API key is not configured');
     }
 
     const prompt = this.createPrompt(query);
 
     try {
-      const response = await fetch(`${this.apiUrl}/chat/completions`, {
+      const response = await fetch(`${this.apiUrl}?key=${this.apiKey}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.apiKey}`,
         },
         body: JSON.stringify({
-          model: 'gpt-3.5-turbo',
-          messages: [
+          contents: [{
+            parts: [{
+              text: prompt
+            }]
+          }],
+          generationConfig: {
+            temperature: 0.7,
+            topK: 40,
+            topP: 0.95,
+            maxOutputTokens: 2048,
+          },
+          safetySettings: [
             {
-              role: 'system',
-              content: 'You are an AI assistant specialized in Indian pharmaceutical gifting solutions. You provide detailed gift recommendations with accurate INR pricing for the Indian market.'
+              category: "HARM_CATEGORY_HARASSMENT",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
             },
             {
-              role: 'user',
-              content: prompt
+              category: "HARM_CATEGORY_HATE_SPEECH",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            },
+            {
+              category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
+            },
+            {
+              category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+              threshold: "BLOCK_MEDIUM_AND_ABOVE"
             }
-          ],
-          max_tokens: 2000,
-          temperature: 0.7,
+          ]
         }),
       });
 
@@ -75,19 +92,21 @@ export class OpenAIService {
           await new Promise(resolve => setTimeout(resolve, delay));
           return this.generateGiftRecommendationsWithRetry(query, retries - 1, delay * 2);
         }
-        throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
+        
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(`Gemini API error: ${response.status} ${response.statusText} - ${errorData.error?.message || 'Unknown error'}`);
       }
 
-      const data: OpenAIResponse = await response.json();
-      const content = data.choices[0]?.message?.content;
+      const data: GeminiResponse = await response.json();
+      const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
       if (!content) {
-        throw new Error('No content received from OpenAI API');
+        throw new Error('No content received from Gemini API');
       }
 
       return this.parseGiftRecommendations(content);
     } catch (error) {
-      console.error('Error calling OpenAI API:', error);
+      console.error('Error calling Gemini API:', error);
       throw error;
     }
   }
@@ -122,40 +141,54 @@ Consider:
 - Professional medical conferences and events in India
 - Price ranges appropriate for Indian market (₹1,000 to ₹10,000 range)
 - Local suppliers and manufacturing capabilities
+
+Important: Return ONLY the JSON array, no additional text or explanation.
 `;
   }
 
   private parseGiftRecommendations(content: string): GiftRecommendation[] {
     try {
-      // Extract JSON from the response (in case there's additional text)
-      const jsonMatch = content.match(/\[[\s\S]*\]/);
+      // Clean the content and extract JSON
+      const cleanContent = content.trim();
+      
+      // Try to find JSON array in the response
+      const jsonMatch = cleanContent.match(/\[[\s\S]*\]/);
       if (!jsonMatch) {
-        throw new Error('No valid JSON found in response');
+        // If no JSON array found, try parsing the entire content
+        const recommendations = JSON.parse(cleanContent);
+        if (!Array.isArray(recommendations)) {
+          throw new Error('Response is not an array');
+        }
+        return this.validateRecommendations(recommendations);
       }
 
       const jsonString = jsonMatch[0];
       const recommendations = JSON.parse(jsonString);
 
-      // Validate the structure
       if (!Array.isArray(recommendations)) {
         throw new Error('Response is not an array');
       }
 
-      return recommendations.map((rec: any, index: number) => ({
-        title: rec.title || `Gift Recommendation ${index + 1}`,
-        description: rec.description || 'No description available',
-        category: rec.category || 'General',
-        priceRange: rec.priceRange || '₹1,000-2,000',
-        rating: typeof rec.rating === 'number' ? rec.rating : 4.0,
-        features: Array.isArray(rec.features) ? rec.features : [],
-        suitableFor: Array.isArray(rec.suitableFor) ? rec.suitableFor : [],
-        availability: rec.availability || 'Available in India'
-      }));
+      return this.validateRecommendations(recommendations);
     } catch (error) {
-      console.error('Error parsing OpenAI response:', error);
+      console.error('Error parsing Gemini response:', error);
+      console.log('Raw response content:', content);
       // Return fallback recommendations if parsing fails
       return this.getFallbackRecommendations();
     }
+  }
+
+  private validateRecommendations(recommendations: any[]): GiftRecommendation[] {
+    return recommendations.map((rec: any, index: number) => ({
+      title: rec.title || `Gift Recommendation ${index + 1}`,
+      description: rec.description || 'No description available',
+      category: rec.category || 'General',
+      priceRange: rec.priceRange || '₹1,000-2,000',
+      rating: typeof rec.rating === 'number' ? Math.min(Math.max(rec.rating, 1), 5) : 4.0,
+      features: Array.isArray(rec.features) ? rec.features.slice(0, 5) : [],
+      suitableFor: Array.isArray(rec.suitableFor) ? rec.suitableFor.slice(0, 3) : [],
+      availability: rec.availability || 'Available in India'
+    }));
   }
 
   private getFallbackRecommendations(): GiftRecommendation[] {
@@ -179,9 +212,19 @@ Consider:
         features: ["Ayurvedic Products", "Stress Relief", "Cultural Relevance"],
         suitableFor: ["Healthcare Professionals", "Wellness Programs"],
         availability: "Pan-India delivery"
+      },
+      {
+        title: "Digital Health Monitoring Kit",
+        description: "Modern health monitoring devices with Indian language support and telemedicine integration for healthcare professionals.",
+        category: "Technology",
+        priceRange: "₹4,200-6,800",
+        rating: 4.7,
+        features: ["Digital Integration", "Multi-language Support", "Telemedicine Ready"],
+        suitableFor: ["Digital Health Initiatives", "Modern Healthcare"],
+        availability: "Major Indian cities"
       }
     ];
   }
 }
 
-export const openAIService = new OpenAIService();
+export const geminiService = new GeminiService();

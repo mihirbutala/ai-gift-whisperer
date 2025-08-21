@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { openAIService } from "@/services/openai";
+import { geminiService } from "@/services/gemini";
 import { toast } from "@/components/ui/sonner";
 
 interface GiftRecommendation {
@@ -31,13 +31,13 @@ export const AIGiftSearch = () => {
     setError(null);
     
     try {
-      const recommendations = await openAIService.generateGiftRecommendations(searchQuery);
+      const recommendations = await geminiService.generateGiftRecommendations(searchQuery);
       setResults(recommendations);
-      toast.success(`Found ${recommendations.length} AI-powered gift recommendations!`);
+      toast.success(`Found ${recommendations.length} Gemini AI-powered gift recommendations!`);
     } catch (error) {
       console.error('Search error:', error);
       setError(error instanceof Error ? error.message : 'An error occurred while searching');
-      toast.error('Failed to generate recommendations. Please try again.');
+      toast.error('Failed to generate recommendations with Gemini AI. Please try again.');
     } finally {
       setIsLoading(false);
     }
