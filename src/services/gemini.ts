@@ -36,7 +36,7 @@ export class GeminiService {
 
   constructor() {
     this.apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
-    this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent';
+    this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
     
     if (!this.apiKey) {
       console.warn('Gemini API key not found. Please set VITE_GEMINI_API_KEY in your environment variables.');
@@ -182,16 +182,16 @@ export class GeminiService {
 
   private createProductAnalysisPrompt(description?: string): string {
     return `
-Analyze this product ${description ? `with description: "${description}"` : 'from the image'} for Indian pharmaceutical gifting market.
+You are an AI assistant specialized in Indian pharmaceutical market analysis. 
+${description ? `Analyze this product: "${description}"` : 'Analyze the product in the image'} for the Indian pharmaceutical gifting market.
 
-Please provide a detailed analysis in the following JSON format. Focus on Indian market pricing in INR, considering GST, local competition, and pharmaceutical industry standards.
+You must respond with ONLY a valid JSON object, no other text.
 
-Return ONLY a valid JSON object with this exact structure:
-
+Required JSON structure:
 {
   "productName": "Identified or suggested product name",
-  "suggestedPrice": "₹X,XXX",
-  "marketComparison": "X% above/below Indian market average",
+  "suggestedPrice": "₹2,500",
+  "marketComparison": "5% below Indian market average",
   "confidence": 85,
   "recommendations": [
     "Specific recommendation 1 for Indian market",
@@ -203,35 +203,35 @@ Return ONLY a valid JSON object with this exact structure:
   "competitorPrices": ["Competitor 1: ₹X,XXX", "Competitor 2: ₹X,XXX", "Market range: ₹X,XXX-X,XXX"]
 }
 
-Consider:
-- Indian pharmaceutical industry standards
-- GST implications (18% for most medical products)
-- Regional pricing variations across Indian states
-- Bulk pricing for pharmaceutical companies
-- Compliance with Indian medical device regulations
-- Cultural preferences in Indian healthcare sector
-- Seasonal pricing (festivals, conferences)
-- Local manufacturing vs imported product pricing
+Requirements:
+- Focus on Indian pharmaceutical industry standards
+- Include 18% GST implications
+- Consider regional pricing variations
+- Include bulk pricing options
+- Ensure regulatory compliance
+- Price range: ₹1,000 to ₹15,000
 
-Important: Return ONLY the JSON object, no additional text or explanation.
+CRITICAL: Return ONLY the JSON object. No explanations, no markdown, no additional text.
 `;
   }
 
   private parseProductQuoteResult(content: string): ProductQuoteResult {
     try {
-      // Clean the content and extract JSON
-      const cleanContent = content.trim();
+      // Clean the content more aggressively
+      let cleanContent = content.trim();
       
-      // Try to find JSON object in the response
-      const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        // If no JSON object found, try parsing the entire content
-        const result = JSON.parse(cleanContent);
-        return this.validateProductQuoteResult(result);
+      // Remove any markdown code blocks
+      cleanContent = cleanContent.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+      
+      // Remove any leading/trailing text that's not JSON
+      const jsonStart = cleanContent.indexOf('{');
+      const jsonEnd = cleanContent.lastIndexOf('}') + 1;
+      
+      if (jsonStart !== -1 && jsonEnd > jsonStart) {
+        cleanContent = cleanContent.substring(jsonStart, jsonEnd);
       }
-
-      const jsonString = jsonMatch[0];
-      const result = JSON.parse(jsonString);
+      
+      const result = JSON.parse(cleanContent);
       return this.validateProductQuoteResult(result);
     } catch (error) {
       console.error('Error parsing Gemini product analysis response:', error);
@@ -294,10 +294,14 @@ Important: Return ONLY the JSON object, no additional text or explanation.
             }]
           }],
           generationConfig: {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
+            temperature: 0.3,
+            topK: 32,
+            topP: 0.8,
             maxOutputTokens: 2048,
+            candidateCount: 1,
+            stopSequences: []
+            candidateCount: 1,
+            stopSequences: []
           },
           safetySettings: [
             {
@@ -369,18 +373,18 @@ Important: Return ONLY the JSON object, no additional text or explanation.
 
   private createPrompt(query: string): string {
     return `
-Based on the following query for Indian pharmaceutical gifting: "${query}"
+You are an AI assistant specialized in Indian pharmaceutical gifting. Based on this query: "${query}"
 
-Please provide 3-4 gift recommendations in the following JSON format. Focus on products suitable for the Indian pharmaceutical industry, with pricing in INR and considering Indian market preferences, regulations, and cultural aspects.
+Generate exactly 3-4 gift recommendations. You must respond with ONLY a valid JSON array, no other text.
 
-Return ONLY a valid JSON array with this exact structure:
+Required JSON structure:
 
 [
   {
     "title": "Product name",
     "description": "Detailed description focusing on Indian pharmaceutical context",
     "category": "Category name",
-    "priceRange": "₹X,XXX-X,XXX",
+    "priceRange": "₹1,000-5,000",
     "rating": 4.5,
     "features": ["Feature 1", "Feature 2", "Feature 3"],
     "suitableFor": ["Target audience 1", "Target audience 2"],
@@ -388,38 +392,35 @@ Return ONLY a valid JSON array with this exact structure:
   }
 ]
 
-Consider:
-- Indian pharmaceutical industry needs
-- GST compliance and Indian regulations
-- Cultural preferences and festivals
-- Ayurvedic and traditional medicine integration
-- Regional preferences across Indian states
-- Professional medical conferences and events in India
-- Price ranges appropriate for Indian market (₹1,000 to ₹10,000 range)
-- Local suppliers and manufacturing capabilities
+Requirements:
+- Focus on Indian pharmaceutical industry
+- Include GST compliance considerations
+- Price ranges: ₹1,000 to ₹10,000
+- Consider Indian cultural preferences
+- Include Ayurvedic/traditional elements where relevant
+- Suitable for medical conferences and healthcare professionals
 
-Important: Return ONLY the JSON array, no additional text or explanation.
+CRITICAL: Return ONLY the JSON array. No explanations, no markdown, no additional text.
 `;
   }
 
   private parseGiftRecommendations(content: string): GiftRecommendation[] {
     try {
-      // Clean the content and extract JSON
-      const cleanContent = content.trim();
+      // Clean the content more aggressively
+      let cleanContent = content.trim();
       
-      // Try to find JSON array in the response
-      const jsonMatch = cleanContent.match(/\[[\s\S]*\]/);
-      if (!jsonMatch) {
-        // If no JSON array found, try parsing the entire content
-        const recommendations = JSON.parse(cleanContent);
-        if (!Array.isArray(recommendations)) {
-          throw new Error('Response is not an array');
-        }
-        return this.validateRecommendations(recommendations);
+      // Remove any markdown code blocks
+      cleanContent = cleanContent.replace(/```json\s*/g, '').replace(/```\s*/g, '');
+      
+      // Remove any leading/trailing text that's not JSON
+      const jsonStart = cleanContent.indexOf('[');
+      const jsonEnd = cleanContent.lastIndexOf(']') + 1;
+      
+      if (jsonStart !== -1 && jsonEnd > jsonStart) {
+        cleanContent = cleanContent.substring(jsonStart, jsonEnd);
       }
-
-      const jsonString = jsonMatch[0];
-      const recommendations = JSON.parse(jsonString);
+      
+      const recommendations = JSON.parse(cleanContent);
 
       if (!Array.isArray(recommendations)) {
         throw new Error('Response is not an array');
