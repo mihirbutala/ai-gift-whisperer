@@ -24,7 +24,7 @@ export class GeminiService {
   private apiUrl: string;
 
   constructor() {
-    this.apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    this.apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
     this.apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
     
     if (!this.apiKey) {
@@ -33,6 +33,15 @@ export class GeminiService {
   }
 
   async generateGiftRecommendations(query: string): Promise<GiftRecommendation[]> {
+    if (!this.apiKey) {
+      console.error('Gemini API key is missing');
+      throw new Error('Gemini API key is not configured. Please add VITE_GEMINI_API_KEY to your environment variables.');
+    }
+
+    if (!query.trim()) {
+      throw new Error('Search query cannot be empty');
+    }
+
     return this.generateGiftRecommendationsWithRetry(query, 5, 2000);
   }
 
@@ -41,13 +50,12 @@ export class GeminiService {
     retries: number = 3, 
     delay: number = 1000
   ): Promise<GiftRecommendation[]> {
-    if (!this.apiKey) {
-      throw new Error('Gemini API key is not configured');
-    }
 
     const prompt = this.createPrompt(query);
 
     try {
+      console.log('Making request to Gemini API...');
+      
       const response = await fetch(`${this.apiUrl}?key=${this.apiKey}`, {
         method: 'POST',
         headers: {
@@ -86,6 +94,8 @@ export class GeminiService {
         }),
       });
 
+      console.log('Response status:', response.status);
+
       if (!response.ok) {
         if (response.status === 429 && retries > 0) {
           console.log(`Rate limit hit, retrying in ${delay}ms... (${retries} retries left)`);
@@ -93,21 +103,41 @@ export class GeminiService {
           return this.generateGiftRecommendationsWithRetry(query, retries - 1, delay * 2);
         }
         
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(`Gemini API error: ${response.status} ${response.statusText} - ${errorData.error?.message || 'Unknown error'}`);
+        let errorMessage = `Gemini API error: ${response.status} ${response.statusText}`;
+        
+        try {
+          const errorData = await response.json();
+          if (errorData.error?.message) {
+            errorMessage += ` - ${errorData.error.message}`;
+          }
+          console.error('Gemini API error details:', errorData);
+        } catch (e) {
+          console.error('Could not parse error response');
+        }
+        
+        throw new Error(errorMessage);
       }
 
       const data: GeminiResponse = await response.json();
+      console.log('Gemini API response received:', data);
+      
       const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
       if (!content) {
-        throw new Error('No content received from Gemini API');
+        console.error('No content in Gemini response:', data);
+        throw new Error('No content received from Gemini API. The response may have been blocked by safety filters.');
       }
 
+      console.log('Raw content from Gemini:', content);
       return this.parseGiftRecommendations(content);
     } catch (error) {
       console.error('Error calling Gemini API:', error);
-      throw error;
+      
+      if (error instanceof Error) {
+        throw error;
+      } else {
+        throw new Error('Unknown error occurred while calling Gemini API');
+      }
     }
   }
 

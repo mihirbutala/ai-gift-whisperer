@@ -29,15 +29,26 @@ export const AIGiftSearch = () => {
     
     setIsLoading(true);
     setError(null);
+    setResults([]);
     
     try {
+      console.log('Starting search with query:', searchQuery);
       const recommendations = await geminiService.generateGiftRecommendations(searchQuery);
+      console.log('Received recommendations:', recommendations);
       setResults(recommendations);
       toast.success(`Found ${recommendations.length} Gemini AI-powered gift recommendations!`);
     } catch (error) {
       console.error('Search error:', error);
-      setError(error instanceof Error ? error.message : 'An error occurred while searching');
-      toast.error('Failed to generate recommendations with Gemini AI. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'An error occurred while searching';
+      setError(errorMessage);
+      
+      if (errorMessage.includes('API key')) {
+        toast.error('Gemini API key not configured. Please check your environment variables.');
+      } else if (errorMessage.includes('429')) {
+        toast.error('Rate limit exceeded. Please wait a moment and try again.');
+      } else {
+        toast.error('Failed to generate recommendations with Gemini AI. Please try again.');
+      }
     } finally {
       setIsLoading(false);
     }
