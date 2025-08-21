@@ -31,6 +31,14 @@ export class OpenAIService {
   }
 
   async generateGiftRecommendations(query: string): Promise<GiftRecommendation[]> {
+    return this.generateGiftRecommendationsWithRetry(query, 3, 1000);
+  }
+
+  private async generateGiftRecommendationsWithRetry(
+    query: string, 
+    retries: number = 3, 
+    delay: number = 1000
+  ): Promise<GiftRecommendation[]> {
     if (!this.apiKey) {
       throw new Error('OpenAI API key is not configured');
     }
@@ -62,6 +70,11 @@ export class OpenAIService {
       });
 
       if (!response.ok) {
+        if (response.status === 429 && retries > 0) {
+          console.log(`Rate limit hit, retrying in ${delay}ms... (${retries} retries left)`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          return this.generateGiftRecommendationsWithRetry(query, retries - 1, delay * 2);
+        }
         throw new Error(`OpenAI API error: ${response.status} ${response.statusText}`);
       }
 
