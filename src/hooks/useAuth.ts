@@ -31,6 +31,13 @@ export const useAuth = () => {
       // Create/update user profile on auth state change
       if (session?.user) {
         createOrUpdateUserProfile(session.user)
+        // Show success message for OAuth sign-ins
+        if (_event === 'SIGNED_IN' && session.user.app_metadata.provider === 'google') {
+          // Use a timeout to ensure the UI has updated
+          setTimeout(() => {
+            console.log('Google sign-in successful')
+          }, 100)
+        }
       }
     })
 

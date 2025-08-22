@@ -45,7 +45,11 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin
+          redirectTo: `${window.location.origin}`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          }
         }
       })
       
@@ -54,8 +58,11 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
         toast.error(`Failed to sign in with Google: ${errorMessage}`)
         console.error('Google sign in error:', error)
       } else {
-        // Don't close modal immediately for OAuth, let the redirect handle it
-        toast.success('Redirecting to Google...')
+        toast.success('Redirecting to Google for authentication...')
+        // Close modal after a short delay to show the success message
+        setTimeout(() => {
+          onClose()
+        }, 1000)
       }
     } catch (error) {
       const errorMessage = getErrorMessage(error);

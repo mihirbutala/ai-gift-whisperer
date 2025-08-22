@@ -27,6 +27,9 @@ export const Navigation = () => {
     if (user?.user_metadata?.full_name) {
       return user.user_metadata.full_name;
     }
+    if (user?.user_metadata?.name) {
+      return user.user_metadata.name;
+    }
     if (user?.email) {
       return user.email.split('@')[0];
     }
