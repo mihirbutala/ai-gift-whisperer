@@ -2,13 +2,24 @@ import { Sparkles, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { AuthModal } from "./AuthModal";
 
 export const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const location = useLocation();
+  const { user, signOut, loading } = useAuth();
 
   const isActive = (path: string) => location.pathname === path;
 
+  const handleSignIn = () => {
+    setShowAuthModal(true);
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+  };
   return (
     <nav className="relative z-50 glass-effect border-b border-border/50">
       <div className="container mx-auto px-4 lg:px-8">
@@ -45,7 +56,17 @@ export const Navigation = () => {
               Features
             </Link>
             <Button variant="outline" size="sm">
-              Sign In
+              {loading ? (
+                'Loading...'
+              ) : user ? (
+                <span onClick={handleSignOut} className="cursor-pointer">
+                  Sign Out
+                </span>
+              ) : (
+                <span onClick={handleSignIn} className="cursor-pointer">
+                  Sign In
+                </span>
+              )}
             </Button>
             <Button variant="hero" size="sm">
               Get Started
@@ -87,7 +108,17 @@ export const Navigation = () => {
             </Link>
             <div className="flex gap-3 pt-4">
               <Button variant="outline" size="sm" className="flex-1">
-                Sign In
+                {loading ? (
+                  'Loading...'
+                ) : user ? (
+                  <span onClick={handleSignOut} className="cursor-pointer">
+                    Sign Out
+                  </span>
+                ) : (
+                  <span onClick={handleSignIn} className="cursor-pointer">
+                    Sign In
+                  </span>
+                )}
               </Button>
               <Button variant="hero" size="sm" className="flex-1">
                 Get Started
@@ -96,6 +127,12 @@ export const Navigation = () => {
           </div>
         )}
       </div>
+      
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)}
+      />
     </nav>
   );
 };

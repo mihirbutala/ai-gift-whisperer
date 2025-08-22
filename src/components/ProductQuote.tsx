@@ -1,11 +1,13 @@
 import { useState, useRef } from "react";
-import { Upload, Image as ImageIcon, DollarSign, TrendingUp, FileText, Sparkles, AlertCircle } from "lucide-react";
+import { Upload, Image as ImageIcon, DollarSign, TrendingUp, FileText, Sparkles, AlertCircle, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { geminiService } from "@/services/gemini";
 import { toast } from "@/components/ui/sonner";
+import { useSearchTracking } from "@/hooks/useSearchTracking";
+import { AuthModal } from "./AuthModal";
 
 interface ProductQuoteResult {
   productName: string;
@@ -25,7 +27,9 @@ export const ProductQuote = () => {
   const [productDescription, setProductDescription] = useState("");
   const [quoteResult, setQuoteResult] = useState<ProductQuoteResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { canSearch, recordSearch, requiresAuth } = useSearchTracking();
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -46,6 +50,12 @@ export const ProductQuote = () => {
   const handleGenerateQuote = async () => {
     if (!uploadedImage && !productDescription.trim()) return;
     
+    // Check if user can search
+    if (!canSearch) {
+      setShowAuthModal(true);
+      return;
+    }
+    
     setIsAnalyzing(true);
     setError(null);
     setQuoteResult(null);
@@ -54,6 +64,10 @@ export const ProductQuote = () => {
       console.log('Starting product analysis...');
       console.log('Has image:', !!uploadedImage);
       console.log('Has description:', !!productDescription.trim());
+      
+      // Record the search
+      const searchQuery = productDescription.trim() || 'Product image analysis';
+      await recordSearch(searchQuery, 'product_quote');
       
       const result = await geminiService.analyzeProductForQuote(
         uploadedImage || undefined,
@@ -77,6 +91,14 @@ export const ProductQuote = () => {
       }
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const handleAuthSuccess = () => {
+    setShowAuthModal(false);
+    // After successful auth, user can search again
+    if (uploadedImage || productDescription.trim()) {
+      handleGenerateQuote();
     }
   };
 
@@ -136,13 +158,18 @@ export const ProductQuote = () => {
         <Button
           onClick={handleGenerateQuote}
           disabled={(!uploadedImage && !productDescription.trim()) || isAnalyzing}
-          variant="accent"
+          variant={canSearch ? "accent" : "outline"}
           className="w-full"
         >
           {isAnalyzing ? (
             <>
               <Sparkles className="h-4 w-4 animate-spin" />
               AI is analyzing...
+            </>
+          ) : !canSearch ? (
+            <>
+              <Lock className="h-4 w-4" />
+              Sign in to analyze
             </>
           ) : (
             <>
@@ -152,6 +179,13 @@ export const ProductQuote = () => {
           )}
         </Button>
       </div>
+
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={handleAuthSuccess}
+      />
 
       {/* Error Display */}
       {error && (
@@ -232,9 +266,14 @@ export const ProductQuote = () => {
         <Card className="p-4 bg-muted/30 border-border/30">
           <div className="text-center space-y-2">
             <ImageIcon className="h-8 w-8 text-accent mx-auto" />
-            <h4 className="text-sm font-medium text-foreground">Get instant competitive pricing</h4>
+            <h4 className="text-sm font-medium text-foreground">
+              {requiresAuth ? "Sign in to continue analyzing" : "Get instant competitive pricing"}
+            </h4>
             <p className="text-xs text-muted-foreground">
-              Upload product images or add descriptions to receive Gemini AI-powered Indian market analysis and INR pricing recommendations
+              {requiresAuth 
+                ? "You've used your free analysis. Sign in to get unlimited AI-powered product quotes."
+                : "Upload product images or add descriptions to receive Gemini AI-powered Indian market analysis and INR pricing recommendations"
+              }
             </p>
           </div>
         </Card>

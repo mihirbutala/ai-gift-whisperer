@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { Search, Sparkles, Gift, Star, CheckCircle, Users, MapPin, AlertCircle } from "lucide-react";
+import { Search, Sparkles, Gift, Star, CheckCircle, Users, MapPin, AlertCircle, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { geminiService } from "@/services/gemini";
 import { toast } from "@/components/ui/sonner";
+import { useSearchTracking } from "@/hooks/useSearchTracking";
+import { AuthModal } from "./AuthModal";
 
 interface GiftRecommendation {
   title: string;
@@ -24,6 +26,8 @@ export const AIGiftSearch = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<GiftRecommendation[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const { canSearch, recordSearch, requiresAuth } = useSearchTracking();
 
   // Function to get appropriate image based on gift category/title
   const getGiftImage = (title: string, category: string): string => {
@@ -54,12 +58,22 @@ export const AIGiftSearch = () => {
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
     
+    // Check if user can search
+    if (!canSearch) {
+      setShowAuthModal(true);
+      return;
+    }
+    
     setIsLoading(true);
     setError(null);
     setResults([]);
     
     try {
       console.log('Starting search with query:', searchQuery);
+      
+      // Record the search
+      await recordSearch(searchQuery, 'ai_search');
+      
       const recommendations = await geminiService.generateGiftRecommendations(searchQuery);
       console.log('Received recommendations:', recommendations);
       
@@ -88,6 +102,14 @@ export const AIGiftSearch = () => {
     }
   };
 
+  const handleAuthSuccess = () => {
+    setShowAuthModal(false);
+    // After successful auth, user can search again
+    if (searchQuery.trim()) {
+      handleSearch();
+    }
+  };
+
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSearch();
@@ -112,13 +134,18 @@ export const AIGiftSearch = () => {
         <Button 
           onClick={handleSearch} 
           disabled={!searchQuery.trim() || isLoading}
-          variant="hero"
+          variant={canSearch ? "hero" : "outline"}
           className="w-full"
         >
           {isLoading ? (
             <>
               <Sparkles className="h-4 w-4 animate-spin" />
               AI is thinking...
+            </>
+          ) : !canSearch ? (
+            <>
+              <Lock className="h-4 w-4" />
+              Sign in to search
             </>
           ) : (
             <>
@@ -128,6 +155,13 @@ export const AIGiftSearch = () => {
           )}
         </Button>
       </div>
+
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={handleAuthSuccess}
+      />
 
       {/* Error Display */}
       {error && (
@@ -240,9 +274,14 @@ export const AIGiftSearch = () => {
         <Card className="p-4 bg-muted/30 border-border/30">
           <div className="text-center space-y-2">
             <Sparkles className="h-8 w-8 text-accent mx-auto" />
-            <h4 className="text-sm font-medium text-foreground">Ready to find the perfect gifts?</h4>
+            <h4 className="text-sm font-medium text-foreground">
+              {requiresAuth ? "Sign in to continue searching" : "Ready to find the perfect gifts?"}
+            </h4>
             <p className="text-xs text-muted-foreground">
-              Try: "gifts for Indian cardiology conference", "Diwali gifts for hospital staff", or "appreciation gifts for Indian pharmaceutical team"
+              {requiresAuth 
+                ? "You've used your free search. Sign in to get unlimited AI-powered gift recommendations."
+                : 'Try: "gifts for Indian cardiology conference", "Diwali gifts for hospital staff", or "appreciation gifts for Indian pharmaceutical team"'
+              }
             </p>
           </div>
         </Card>
