@@ -16,6 +16,7 @@ interface GiftRecommendation {
   features: string[];
   suitableFor: string[];
   availability: string;
+  image?: string;
 }
 
 export const AIGiftSearch = () => {
@@ -24,6 +25,32 @@ export const AIGiftSearch = () => {
   const [results, setResults] = useState<GiftRecommendation[]>([]);
   const [error, setError] = useState<string | null>(null);
 
+  // Function to get appropriate image based on gift category/title
+  const getGiftImage = (title: string, category: string): string => {
+    const lowerTitle = title.toLowerCase();
+    const lowerCategory = category.toLowerCase();
+    
+    if (lowerTitle.includes('medical') || lowerTitle.includes('stethoscope') || lowerCategory.includes('medical')) {
+      return 'https://images.pexels.com/photos/40568/medical-appointment-doctor-healthcare-40568.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop';
+    }
+    if (lowerTitle.includes('wellness') || lowerTitle.includes('ayurvedic') || lowerCategory.includes('wellness')) {
+      return 'https://images.pexels.com/photos/3683074/pexels-photo-3683074.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop';
+    }
+    if (lowerTitle.includes('conference') || lowerTitle.includes('kit') || lowerCategory.includes('conference')) {
+      return 'https://images.pexels.com/photos/1181406/pexels-photo-1181406.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop';
+    }
+    if (lowerTitle.includes('digital') || lowerTitle.includes('technology') || lowerCategory.includes('technology')) {
+      return 'https://images.pexels.com/photos/4386466/pexels-photo-4386466.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop';
+    }
+    if (lowerTitle.includes('book') || lowerTitle.includes('education') || lowerCategory.includes('education')) {
+      return 'https://images.pexels.com/photos/159711/books-bookstore-book-reading-159711.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop';
+    }
+    if (lowerTitle.includes('premium') || lowerTitle.includes('luxury') || lowerCategory.includes('premium')) {
+      return 'https://images.pexels.com/photos/1666065/pexels-photo-1666065.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop';
+    }
+    // Default pharmaceutical/medical gift image
+    return 'https://images.pexels.com/photos/3683074/pexels-photo-3683074.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop';
+  };
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
     
@@ -35,7 +62,14 @@ export const AIGiftSearch = () => {
       console.log('Starting search with query:', searchQuery);
       const recommendations = await geminiService.generateGiftRecommendations(searchQuery);
       console.log('Received recommendations:', recommendations);
-      setResults(recommendations);
+      
+      // Add images to recommendations
+      const recommendationsWithImages = recommendations.map(rec => ({
+        ...rec,
+        image: getGiftImage(rec.title, rec.category)
+      }));
+      
+      setResults(recommendationsWithImages);
       toast.success(`Found ${recommendations.length} Gemini AI-powered gift recommendations!`);
     } catch (error) {
       console.error('Search error:', error);
@@ -118,16 +152,29 @@ export const AIGiftSearch = () => {
           
           <div className="space-y-3">
             {results.map((gift) => (
-              <Card key={gift.title} className="p-6 shadow-soft border-border/50 hover:shadow-medium transition-all duration-300 bg-background/60 backdrop-blur-sm">
+              <Card key={gift.title} className="overflow-hidden shadow-soft border-border/50 hover:shadow-medium transition-all duration-300 bg-background/60 backdrop-blur-sm">
+                {/* Large Image */}
+                <div className="relative h-64 w-full overflow-hidden">
+                  <img
+                    src={gift.image}
+                    alt={gift.title}
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                  />
+                  <div className="absolute top-4 right-4">
+                    <Badge variant="outline" className="text-xs bg-background/90 border-accent/20 backdrop-blur-sm">
+                      {gift.category}
+                    </Badge>
+                  </div>
+                </div>
+                
+                {/* Content */}
+                <div className="p-6">
                 <div className="space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="space-y-1">
                       <h4 className="font-semibold text-foreground text-sm">{gift.title}</h4>
                       <p className="text-xs text-muted-foreground leading-relaxed">{gift.description}</p>
                     </div>
-                    <Badge variant="outline" className="text-xs bg-accent-soft border-accent/20">
-                      {gift.category}
-                    </Badge>
                   </div>
                   
                   {/* Features */}
@@ -180,6 +227,7 @@ export const AIGiftSearch = () => {
                       </div>
                     </div>
                   </div>
+                </div>
                 </div>
               </Card>
             ))}
