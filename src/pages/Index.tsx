@@ -1,7 +1,6 @@
 import { Search, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navigation } from "@/components/Navigation";
-import { SupabaseConnectionTest } from "@/components/SupabaseConnectionTest";
 import { Link } from "react-router-dom";
 
 const Index = () => {
@@ -38,11 +37,6 @@ const Index = () => {
               </Button>
             </Link>
           </div>
-        </div>
-        
-        {/* Supabase Connection Test - Remove this in production */}
-        <div className="mt-16 max-w-2xl mx-auto">
-          <SupabaseConnectionTest />
         </div>
       </section>
     </div>
