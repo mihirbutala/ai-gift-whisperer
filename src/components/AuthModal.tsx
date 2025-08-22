@@ -23,6 +23,22 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     fullName: ''
   })
 
+  const getErrorMessage = (error: any) => {
+    if (error?.message?.includes('Invalid login credentials')) {
+      return 'Invalid email or password. Please check your credentials and try again.';
+    }
+    if (error?.message?.includes('User already registered')) {
+      return 'An account with this email already exists. Please sign in instead.';
+    }
+    if (error?.message?.includes('Email not confirmed')) {
+      return 'Please check your email and click the confirmation link before signing in.';
+    }
+    if (error?.message?.includes('Password should be at least 6 characters')) {
+      return 'Password must be at least 6 characters long.';
+    }
+    return error?.message || 'An unexpected error occurred. Please try again.';
+  };
+
   const handleGoogleSignIn = async () => {
     setLoading(true)
     try {
@@ -34,14 +50,16 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       })
       
       if (error) {
-        toast.error(`Failed to sign in with Google: ${error.message}`)
+        const errorMessage = getErrorMessage(error);
+        toast.error(`Failed to sign in with Google: ${errorMessage}`)
         console.error('Google sign in error:', error)
       } else {
         // Don't close modal immediately for OAuth, let the redirect handle it
         toast.success('Redirecting to Google...')
       }
     } catch (error) {
-      toast.error('An error occurred during Google sign in')
+      const errorMessage = getErrorMessage(error);
+      toast.error(`Google Sign In Failed: ${errorMessage}`)
       console.error('Google sign in error:', error)
     } finally {
       setLoading(false)
@@ -71,7 +89,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       })
 
       if (error) {
-        toast.error(error.message)
+        const errorMessage = getErrorMessage(error);
+        toast.error(`Sign Up Failed: ${errorMessage}`)
         return
       }
 
@@ -94,12 +113,13 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
           onSuccess?.()
           onClose()
         } else {
-          toast.success('Account created! Please check your email to confirm your account.')
+          toast.success('Check Your Email - We\'ve sent you a confirmation link. Please check your email and click the link to complete your registration.')
           // Don't close modal yet, let user know to check email
         }
       }
     } catch (error) {
-      toast.error('An error occurred during sign up')
+      const errorMessage = getErrorMessage(error);
+      toast.error(`Sign Up Failed: ${errorMessage}`)
       console.error('Sign up error:', error)
     } finally {
       setLoading(false)
@@ -120,11 +140,12 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       })
 
       if (error) {
-        toast.error(error.message)
+        const errorMessage = getErrorMessage(error);
+        toast.error(`Sign In Failed: ${errorMessage}`)
         return
       }
 
-      toast.success('Signed in successfully!')
+      toast.success('Welcome back! You have successfully signed in.')
       
       // Create or update user profile
       const { data: userData } = await supabase.auth.getUser()
@@ -145,7 +166,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       onSuccess?.()
       onClose()
     } catch (error) {
-      toast.error('An error occurred during sign in')
+      const errorMessage = getErrorMessage(error);
+      toast.error(`Sign In Failed: ${errorMessage}`)
       console.error('Sign in error:', error)
     } finally {
       setLoading(false)
