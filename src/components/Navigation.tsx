@@ -21,9 +21,8 @@ export const Navigation = () => {
 
   const handleSignOut = async () => {
     await signOut();
-    toast.success('Signed out successfully!');
   };
-  return (
+
   const getUserDisplayName = () => {
     if (user?.user_metadata?.full_name) {
       return user.user_metadata.full_name;
@@ -39,6 +38,7 @@ export const Navigation = () => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
   };
 
+  return (
     <nav className="relative z-50 glass-effect border-b border-border/50">
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between h-16">
