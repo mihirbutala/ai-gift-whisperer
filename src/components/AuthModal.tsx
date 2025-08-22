@@ -4,7 +4,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Card } from '@/components/ui/card'
 import { Mail, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { toast } from '@/components/ui/sonner'
@@ -30,13 +29,16 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback`
+          redirectTo: window.location.origin
         }
       })
       
       if (error) {
-        toast.error('Failed to sign in with Google')
+        toast.error(`Failed to sign in with Google: ${error.message}`)
         console.error('Google sign in error:', error)
+      } else {
+        // Don't close modal immediately for OAuth, let the redirect handle it
+        toast.success('Redirecting to Google...')
       }
     } catch (error) {
       toast.error('An error occurred during Google sign in')
@@ -52,6 +54,10 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       return
     }
 
+    if (formData.password.length < 6) {
+      toast.error('Password must be at least 6 characters long')
+      return
+    }
     setLoading(true)
     try {
       const { data, error } = await supabase.auth.signUp({
@@ -70,22 +76,27 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       }
 
       if (data.user) {
-        // Create user profile
-        const { error: profileError } = await supabase
-          .from('user_profiles')
-          .insert({
-            user_id: data.user.id,
-            email: formData.email,
-            full_name: formData.fullName
-          })
+        // Create user profile if user is confirmed
+        if (data.user.email_confirmed_at) {
+          const { error: profileError } = await supabase
+            .from('user_profiles')
+            .insert({
+              user_id: data.user.id,
+              email: formData.email,
+              full_name: formData.fullName
+            })
 
-        if (profileError) {
-          console.error('Profile creation error:', profileError)
+          if (profileError) {
+            console.error('Profile creation error:', profileError)
+          }
+
+          toast.success('Account created and signed in successfully!')
+          onSuccess?.()
+          onClose()
+        } else {
+          toast.success('Account created! Please check your email to confirm your account.')
+          // Don't close modal yet, let user know to check email
         }
-
-        toast.success('Account created successfully!')
-        onSuccess?.()
-        onClose()
       }
     } catch (error) {
       toast.error('An error occurred during sign up')
@@ -114,6 +125,23 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       }
 
       toast.success('Signed in successfully!')
+      
+      // Create or update user profile
+      const { data: userData } = await supabase.auth.getUser()
+      if (userData.user) {
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .upsert({
+            user_id: userData.user.id,
+            email: formData.email,
+            full_name: userData.user.user_metadata?.full_name || formData.fullName || null
+          })
+
+        if (profileError) {
+          console.error('Profile upsert error:', profileError)
+        }
+      }
+      
       onSuccess?.()
       onClose()
     } catch (error) {
@@ -124,8 +152,22 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     }
   }
 
+  const resetForm = () => {
+    setFormData({
+      email: '',
+      password: '',
+      fullName: ''
+    })
+    setShowPassword(false)
+  }
+
+  const handleClose = () => {
+    resetForm()
+    onClose()
+  }
+
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="text-center">Sign in to continue searching</DialogTitle>
@@ -248,7 +290,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
                   <Input
                     id="signup-password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Create a password"
+                    placeholder="Create a password (min 6 characters)"
                     className="pr-10"
                     value={formData.password}
                     onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}

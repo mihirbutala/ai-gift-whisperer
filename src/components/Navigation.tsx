@@ -1,5 +1,7 @@
 import { Sparkles, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,8 +21,24 @@ export const Navigation = () => {
 
   const handleSignOut = async () => {
     await signOut();
+    toast.success('Signed out successfully!');
   };
   return (
+  const getUserDisplayName = () => {
+    if (user?.user_metadata?.full_name) {
+      return user.user_metadata.full_name;
+    }
+    if (user?.email) {
+      return user.email.split('@')[0];
+    }
+    return 'User';
+  };
+
+  const getUserInitials = () => {
+    const name = getUserDisplayName();
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
     <nav className="relative z-50 glass-effect border-b border-border/50">
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between h-16">
@@ -55,19 +73,42 @@ export const Navigation = () => {
             >
               Features
             </Link>
-            <Button variant="outline" size="sm">
-              {loading ? (
-                'Loading...'
-              ) : user ? (
-                <span onClick={handleSignOut} className="cursor-pointer">
-                  Sign Out
-                </span>
-              ) : (
-                <span onClick={handleSignIn} className="cursor-pointer">
-                  Sign In
-                </span>
-              )}
-            </Button>
+            
+            {loading ? (
+              <Button variant="outline" size="sm" disabled>
+                Loading...
+              </Button>
+            ) : user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user.user_metadata?.avatar_url} alt={getUserDisplayName()} />
+                      <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <div className="flex items-center justify-start gap-2 p-2">
+                    <div className="flex flex-col space-y-1 leading-none">
+                      <p className="font-medium">{getUserDisplayName()}</p>
+                      <p className="w-[200px] truncate text-sm text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </div>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button variant="outline" size="sm" onClick={handleSignIn}>
+                Sign In
+              </Button>
+            )}
+            
             <Button variant="hero" size="sm">
               Get Started
             </Button>
@@ -107,19 +148,26 @@ export const Navigation = () => {
               Features
             </Link>
             <div className="flex gap-3 pt-4">
-              <Button variant="outline" size="sm" className="flex-1">
-                {loading ? (
-                  'Loading...'
-                ) : user ? (
-                  <span onClick={handleSignOut} className="cursor-pointer">
+              {loading ? (
+                <Button variant="outline" size="sm" className="flex-1" disabled>
+                  Loading...
+                </Button>
+              ) : user ? (
+                <div className="flex items-center gap-2 flex-1">
+                  <Avatar className="h-6 w-6">
+                    <AvatarImage src={user.user_metadata?.avatar_url} alt={getUserDisplayName()} />
+                    <AvatarFallback className="text-xs">{getUserInitials()}</AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm truncate">{getUserDisplayName()}</span>
+                  <Button variant="outline" size="sm" onClick={handleSignOut}>
                     Sign Out
-                  </span>
-                ) : (
-                  <span onClick={handleSignIn} className="cursor-pointer">
-                    Sign In
-                  </span>
-                )}
-              </Button>
+                  </Button>
+                </div>
+              ) : (
+                <Button variant="outline" size="sm" className="flex-1" onClick={handleSignIn}>
+                  Sign In
+                </Button>
+              )}
               <Button variant="hero" size="sm" className="flex-1">
                 Get Started
               </Button>

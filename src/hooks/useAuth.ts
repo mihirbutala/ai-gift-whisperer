@@ -13,6 +13,11 @@ export const useAuth = () => {
       setSession(session)
       setUser(session?.user ?? null)
       setLoading(false)
+      
+      // Create/update user profile if user exists
+      if (session?.user) {
+        createOrUpdateUserProfile(session.user)
+      }
     })
 
     // Listen for auth changes
@@ -22,13 +27,40 @@ export const useAuth = () => {
       setSession(session)
       setUser(session?.user ?? null)
       setLoading(false)
+      
+      // Create/update user profile on auth state change
+      if (session?.user) {
+        createOrUpdateUserProfile(session.user)
+      }
     })
 
     return () => subscription.unsubscribe()
   }, [])
 
+  const createOrUpdateUserProfile = async (user: User) => {
+    try {
+      const { error } = await supabase
+        .from('user_profiles')
+        .upsert({
+          user_id: user.id,
+          email: user.email,
+          full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
+          updated_at: new Date().toISOString()
+        })
+      
+      if (error) {
+        console.error('Error creating/updating user profile:', error)
+      }
+    } catch (error) {
+      console.error('Error in createOrUpdateUserProfile:', error)
+    }
+  }
   const signOut = async () => {
-    await supabase.auth.signOut()
+    const { error } = await supabase.auth.signOut()
+    if (error) {
+      console.error('Error signing out:', error)
+      throw error
+    }
   }
 
   return {
