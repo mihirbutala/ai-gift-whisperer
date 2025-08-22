@@ -44,18 +44,6 @@ export const Navigation = () => {
             >
               Features
             </Link>
-            <Link 
-              to="/pricing" 
-              className={`transition-colors ${isActive('/pricing') ? 'text-accent font-medium' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              Pricing
-            </Link>
-            <Link 
-              to="/about" 
-              className={`transition-colors ${isActive('/about') ? 'text-accent font-medium' : 'text-muted-foreground hover:text-foreground'}`}
-            >
-              About
-            </Link>
             <Button variant="outline" size="sm">
               Sign In
             </Button>
@@ -96,20 +84,6 @@ export const Navigation = () => {
               onClick={() => setIsMenuOpen(false)}
             >
               Features
-            </Link>
-            <Link 
-              to="/pricing" 
-              className={`block transition-colors ${isActive('/pricing') ? 'text-accent font-medium' : 'text-muted-foreground hover:text-foreground'}`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Pricing
-            </Link>
-            <Link 
-              to="/about" 
-              className={`block transition-colors ${isActive('/about') ? 'text-accent font-medium' : 'text-muted-foreground hover:text-foreground'}`}
-              onClick={() => setIsMenuOpen(false)}
-            >
-              About
             </Link>
             <div className="flex gap-3 pt-4">
               <Button variant="outline" size="sm" className="flex-1">
