@@ -91,6 +91,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       if (error) {
         const errorMessage = getErrorMessage(error);
         toast.error(`Sign Up Failed: ${errorMessage}`)
+        // Clear password on error to prevent repeated failed attempts
+        setFormData(prev => ({ ...prev, password: '' }))
         return
       }
 
@@ -142,6 +144,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
       if (error) {
         const errorMessage = getErrorMessage(error);
         toast.error(`Sign In Failed: ${errorMessage}`)
+        // Clear password on error to prevent repeated failed attempts
+        setFormData(prev => ({ ...prev, password: '' }))
         return
       }
 
