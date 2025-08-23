@@ -149,95 +149,16 @@ export const AIGiftSearch = () => {
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-sm font-medium text-foreground">
             <Gift className="h-4 w-4 text-accent" />
-            Gemini AI-Powered Gift Recommendations
+            Gemini AI Raw Output
           </div>
           
-          <div className="space-y-3">
-            {results.map((gift) => (
-              <Card key={gift.title} className="overflow-hidden shadow-soft border-border/50 hover:shadow-medium transition-all duration-300 bg-background/60 backdrop-blur-sm">
-                {/* Large Image */}
-                <div className="relative h-64 w-full overflow-hidden">
-                  <img
-                    src={gift.imageUrl || 'https://images.pexels.com/photos/3683074/pexels-photo-3683074.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop'}
-                    alt={gift.title}
-                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                    onError={(e) => {
-                      // Fallback to default image if the provided image fails to load
-                      const target = e.target as HTMLImageElement;
-                      target.src = 'https://images.pexels.com/photos/3683074/pexels-photo-3683074.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop';
-                    }}
-                  />
-                  <div className="absolute top-4 right-4">
-                    <Badge variant="outline" className="text-xs bg-background/90 border-accent/20 backdrop-blur-sm">
-                      {gift.category}
-                    </Badge>
-                  </div>
-                </div>
-                
-                {/* Content */}
-                <div className="p-6">
-                <div className="space-y-3">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="space-y-1">
-                      <h4 className="font-semibold text-foreground text-sm">{gift.title}</h4>
-                      <p className="text-xs text-muted-foreground leading-relaxed">{gift.description}</p>
-                    </div>
-                  </div>
-                  
-                  {/* Features */}
-                  {gift.features.length > 0 && (
-                    <div className="space-y-2">
-                      <h5 className="text-xs font-medium text-foreground flex items-center gap-1">
-                        <CheckCircle className="h-3 w-3 text-success" />
-                        Key Features
-                      </h5>
-                      <div className="flex flex-wrap gap-1">
-                        {gift.features.map((feature, index) => (
-                          <Badge key={index} variant="outline" className="text-xs bg-success/10 border-success/20 text-success">
-                            {feature}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Suitable For */}
-                  {gift.suitableFor.length > 0 && (
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <Users className="h-3 w-3" />
-                      <span>Suitable for: {gift.suitableFor.join(", ")}</span>
-                    </div>
-                  )}
-
-                  {/* Bottom Row */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="flex items-center gap-1">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            className={`h-3 w-3 ${
-                              i < Math.floor(gift.rating) 
-                                ? 'fill-accent text-accent' 
-                                : 'text-muted-foreground/30'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <span className="text-xs text-muted-foreground">{gift.rating}</span>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-semibold text-accent">{gift.priceRange}</div>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <MapPin className="h-3 w-3" />
-                        {gift.availability}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                </div>
-              </Card>
-            ))}
+          <div className="p-4 bg-black text-green-400 border border-border rounded-lg font-mono text-sm whitespace-pre-wrap">
+            <div className="space-y-3">
+              <div className="text-yellow-400 font-bold">GEMINI AI OUTPUT:</div>
+              <div className="border-t border-green-600 pt-2">
+                {JSON.stringify(results, null, 2)}
+              </div>
+            </div>
           </div>
         </div>
       )}

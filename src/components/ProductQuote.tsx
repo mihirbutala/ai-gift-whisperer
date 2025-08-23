@@ -205,56 +205,14 @@ export const ProductQuote = () => {
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-sm font-medium text-foreground">
             <TrendingUp className="h-4 w-4 text-accent" />
-            AI Pricing Analysis
+            Gemini AI Raw Output
           </div>
 
-          <div className="p-4 bg-background border border-border rounded-lg font-mono text-sm">
+          <div className="p-4 bg-black text-green-400 border border-border rounded-lg font-mono text-sm whitespace-pre-wrap">
             <div className="space-y-3">
-              <div>
-                <strong>Product Name:</strong> {quoteResult.productName}
-              </div>
-              <div>
-                <strong>Category:</strong> {quoteResult.category}
-              </div>
-              <div>
-                <strong>Suggested Price:</strong> {quoteResult.suggestedPrice}
-              </div>
-              <div>
-                <strong>Market Comparison:</strong> {quoteResult.marketComparison}
-              </div>
-              <div>
-                <strong>Confidence:</strong> {quoteResult.confidence}%
-              </div>
-              
-              {quoteResult.features.length > 0 && (
-                <div>
-                  <strong>Key Features:</strong>
-                  <div className="ml-4 mt-1">
-                    {quoteResult.features.map((feature, index) => (
-                      <div key={index}>• {feature}</div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              {quoteResult.competitorPrices.length > 0 && (
-                <div>
-                  <strong>Market Comparison:</strong>
-                  <div className="ml-4 mt-1">
-                    {quoteResult.competitorPrices.map((price, index) => (
-                      <div key={index}>• {price}</div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-              <div>
-                <strong>Recommendations:</strong>
-                <div className="ml-4 mt-1">
-                  {quoteResult.recommendations.map((rec, index) => (
-                    <div key={index}>• {rec}</div>
-                  ))}
-                </div>
+              <div className="text-yellow-400 font-bold">GEMINI AI OUTPUT:</div>
+              <div className="border-t border-green-600 pt-2">
+                {JSON.stringify(quoteResult, null, 2)}
               </div>
             </div>
           </div>
