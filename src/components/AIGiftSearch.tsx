@@ -18,7 +18,7 @@ interface GiftRecommendation {
   features: string[];
   suitableFor: string[];
   availability: string;
-  image?: string;
+  imageUrl?: string;
 }
 
 export const AIGiftSearch = () => {
@@ -29,32 +29,6 @@ export const AIGiftSearch = () => {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { canSearch, recordSearch, requiresAuth } = useSearchTracking();
 
-  // Function to get appropriate image based on gift category/title
-  const getGiftImage = (title: string, category: string): string => {
-    const lowerTitle = title.toLowerCase();
-    const lowerCategory = category.toLowerCase();
-    
-    if (lowerTitle.includes('medical') || lowerTitle.includes('stethoscope') || lowerCategory.includes('medical')) {
-      return 'https://images.pexels.com/photos/40568/medical-appointment-doctor-healthcare-40568.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop';
-    }
-    if (lowerTitle.includes('wellness') || lowerTitle.includes('ayurvedic') || lowerCategory.includes('wellness')) {
-      return 'https://images.pexels.com/photos/3683074/pexels-photo-3683074.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop';
-    }
-    if (lowerTitle.includes('conference') || lowerTitle.includes('kit') || lowerCategory.includes('conference')) {
-      return 'https://images.pexels.com/photos/1181406/pexels-photo-1181406.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop';
-    }
-    if (lowerTitle.includes('digital') || lowerTitle.includes('technology') || lowerCategory.includes('technology')) {
-      return 'https://images.pexels.com/photos/4386466/pexels-photo-4386466.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop';
-    }
-    if (lowerTitle.includes('book') || lowerTitle.includes('education') || lowerCategory.includes('education')) {
-      return 'https://images.pexels.com/photos/159711/books-bookstore-book-reading-159711.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop';
-    }
-    if (lowerTitle.includes('premium') || lowerTitle.includes('luxury') || lowerCategory.includes('premium')) {
-      return 'https://images.pexels.com/photos/1666065/pexels-photo-1666065.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop';
-    }
-    // Default pharmaceutical/medical gift image
-    return 'https://images.pexels.com/photos/3683074/pexels-photo-3683074.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop';
-  };
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
     
@@ -77,13 +51,7 @@ export const AIGiftSearch = () => {
       const recommendations = await geminiService.generateGiftRecommendations(searchQuery);
       console.log('Received recommendations:', recommendations);
       
-      // Add images to recommendations
-      const recommendationsWithImages = recommendations.map(rec => ({
-        ...rec,
-        image: getGiftImage(rec.title, rec.category)
-      }));
-      
-      setResults(recommendationsWithImages);
+      setResults(recommendations);
       toast.success(`Found ${recommendations.length} Gemini AI-powered gift recommendations!`);
     } catch (error) {
       console.error('Search error:', error);
@@ -123,7 +91,7 @@ export const AIGiftSearch = () => {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
-            placeholder="Describe your gifting needs (e.g., 'gifts for Indian cardiology conference attendees')"
+            placeholder="Describe your specific gifting needs (e.g., 'premium gifts for Indian cardiologists at medical conference', 'wellness products for hospital staff during monsoon season')"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyPress={handleKeyPress}
@@ -140,7 +108,7 @@ export const AIGiftSearch = () => {
           {isLoading ? (
             <>
               <Sparkles className="h-4 w-4 animate-spin" />
-              AI is thinking...
+              Gemini AI is analyzing your request...
             </>
           ) : !canSearch ? (
             <>
@@ -150,7 +118,7 @@ export const AIGiftSearch = () => {
           ) : (
             <>
               <Sparkles className="h-4 w-4" />
-              Generate Gift Ideas
+              Get AI-Powered Gift Recommendations
             </>
           )}
         </Button>
@@ -181,7 +149,7 @@ export const AIGiftSearch = () => {
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-sm font-medium text-foreground">
             <Gift className="h-4 w-4 text-accent" />
-            AI-Generated Gift Suggestions
+            Gemini AI-Powered Gift Recommendations
           </div>
           
           <div className="space-y-3">
@@ -190,9 +158,14 @@ export const AIGiftSearch = () => {
                 {/* Large Image */}
                 <div className="relative h-64 w-full overflow-hidden">
                   <img
-                    src={gift.image}
+                    src={gift.imageUrl || 'https://images.pexels.com/photos/3683074/pexels-photo-3683074.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop'}
                     alt={gift.title}
                     className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                    onError={(e) => {
+                      // Fallback to default image if the provided image fails to load
+                      const target = e.target as HTMLImageElement;
+                      target.src = 'https://images.pexels.com/photos/3683074/pexels-photo-3683074.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop';
+                    }}
                   />
                   <div className="absolute top-4 right-4">
                     <Badge variant="outline" className="text-xs bg-background/90 border-accent/20 backdrop-blur-sm">
@@ -280,7 +253,7 @@ export const AIGiftSearch = () => {
             <p className="text-xs text-muted-foreground">
               {requiresAuth 
                 ? "You've used your free search. Sign in to get unlimited AI-powered gift recommendations."
-                : 'Try: "gifts for Indian cardiology conference", "Diwali gifts for hospital staff", or "appreciation gifts for Indian pharmaceutical team"'
+                : 'Try specific queries like: "premium stethoscopes for Indian cardiologists", "Ayurvedic wellness gifts for hospital staff during Diwali", or "digital health monitoring devices for rural healthcare workers"'
               }
             </p>
           </div>

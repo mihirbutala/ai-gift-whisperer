@@ -373,32 +373,37 @@ CRITICAL: Return ONLY the JSON object. No explanations, no markdown, no addition
 
   private createPrompt(query: string): string {
     return `
-You are an AI assistant specialized in Indian pharmaceutical gifting. Based on this query: "${query}"
+You are an AI assistant specialized in Indian pharmaceutical gifting and medical products. Based on this query: "${query}"
 
-Generate exactly 3-4 gift recommendations. You must respond with ONLY a valid JSON array, no other text.
+Generate exactly 3-4 highly relevant and specific gift recommendations for Indian pharmaceutical professionals. You must respond with ONLY a valid JSON array, no other text.
 
 Required JSON structure:
 
 [
   {
-    "title": "Product name",
-    "description": "Detailed description focusing on Indian pharmaceutical context",
-    "category": "Category name",
+    "title": "Specific product name (e.g., 'Premium Digital Stethoscope with Bluetooth')",
+    "description": "Detailed 2-3 sentence description explaining why this gift is perfect for Indian pharmaceutical professionals, including specific benefits and use cases",
+    "category": "Specific category (e.g., 'Medical Equipment', 'Educational Materials', 'Wellness Products')",
     "priceRange": "₹1,000-5,000",
     "rating": 4.5,
-    "features": ["Feature 1", "Feature 2", "Feature 3"],
-    "suitableFor": ["Target audience 1", "Target audience 2"],
-    "availability": "Availability status in India"
+    "features": ["Specific feature 1", "Specific feature 2", "Specific feature 3", "Indian market specific feature"],
+    "suitableFor": ["Specific professional role 1", "Specific professional role 2"],
+    "availability": "Specific availability info (e.g., 'Available in major Indian cities', 'Pan-India delivery available')",
+    "imageUrl": "https://images.pexels.com/photos/[specific-relevant-photo-id]/pexels-photo-[id].jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop"
   }
 ]
 
 Requirements:
-- Focus on Indian pharmaceutical industry
-- Include GST compliance considerations
-- Price ranges: ₹1,000 to ₹10,000
-- Consider Indian cultural preferences
-- Include Ayurvedic/traditional elements where relevant
-- Suitable for medical conferences and healthcare professionals
+- Focus specifically on Indian pharmaceutical industry needs
+- Include GST compliance and regulatory considerations
+- Price ranges: ₹1,000 to ₹15,000 (realistic Indian market prices)
+- Consider Indian cultural preferences and regional variations
+- Include Ayurvedic/traditional elements where culturally relevant
+- Ensure gifts are suitable for medical conferences, hospitals, and healthcare professionals
+- Provide specific, actionable product recommendations
+- Include real, relevant image URLs from Pexels that match the product type
+- Make descriptions compelling and specific to Indian pharmaceutical context
+- Consider seasonal factors (monsoon, festivals, etc.) if relevant to the query
 
 CRITICAL: Return ONLY the JSON array. No explanations, no markdown, no additional text.
 `;
@@ -444,41 +449,67 @@ CRITICAL: Return ONLY the JSON array. No explanations, no markdown, no additiona
       rating: typeof rec.rating === 'number' ? Math.min(Math.max(rec.rating, 1), 5) : 4.0,
       features: Array.isArray(rec.features) ? rec.features.slice(0, 5) : [],
       suitableFor: Array.isArray(rec.suitableFor) ? rec.suitableFor.slice(0, 3) : [],
-      availability: rec.availability || 'Available in India'
+      availability: rec.availability || 'Available in India',
+      imageUrl: rec.imageUrl || this.getDefaultImageForCategory(rec.category || 'General')
     }));
+  }
+
+  private getDefaultImageForCategory(category: string): string {
+    const lowerCategory = category.toLowerCase();
+    
+    if (lowerCategory.includes('medical') || lowerCategory.includes('equipment')) {
+      return 'https://images.pexels.com/photos/40568/medical-appointment-doctor-healthcare-40568.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop';
+    }
+    if (lowerCategory.includes('wellness') || lowerCategory.includes('ayurvedic')) {
+      return 'https://images.pexels.com/photos/3683074/pexels-photo-3683074.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop';
+    }
+    if (lowerCategory.includes('conference') || lowerCategory.includes('educational')) {
+      return 'https://images.pexels.com/photos/1181406/pexels-photo-1181406.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop';
+    }
+    if (lowerCategory.includes('technology') || lowerCategory.includes('digital')) {
+      return 'https://images.pexels.com/photos/4386466/pexels-photo-4386466.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop';
+    }
+    if (lowerCategory.includes('book') || lowerCategory.includes('education')) {
+      return 'https://images.pexels.com/photos/159711/books-bookstore-book-reading-159711.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop';
+    }
+    // Default medical/pharmaceutical image
+    return 'https://images.pexels.com/photos/3683074/pexels-photo-3683074.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop';
   }
 
   private getFallbackRecommendations(): GiftRecommendation[] {
     return [
       {
-        title: "Premium Indian Medical Conference Kit",
-        description: "Comprehensive gift package including branded notebooks, premium pens, and educational materials specifically designed for Indian pharmaceutical conferences.",
+        title: "Premium Digital Stethoscope with Bluetooth Connectivity",
+        description: "Advanced digital stethoscope with Bluetooth connectivity and mobile app integration, perfect for modern Indian healthcare professionals. Features noise cancellation and recording capabilities for better patient care documentation.",
         category: "Conference Gifts",
-        priceRange: "₹3,500-5,200",
+        priceRange: "₹8,500-12,200",
         rating: 4.8,
-        features: ["GST Compliant", "Custom Branding", "Bulk Discounts"],
-        suitableFor: ["Medical Conferences", "Pharmaceutical Events"],
-        availability: "Available across India"
+        features: ["Bluetooth Connectivity", "Mobile App Integration", "Noise Cancellation", "GST Compliant", "2-Year Warranty"],
+        suitableFor: ["Cardiologists", "General Physicians", "Medical Students"],
+        availability: "Available across India with same-day delivery in metro cities",
+        imageUrl: "https://images.pexels.com/photos/40568/medical-appointment-doctor-healthcare-40568.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop"
       },
       {
-        title: "Ayurvedic Wellness Gift Collection",
-        description: "Curated wellness products combining modern healthcare with traditional Ayurvedic elements, perfect for Indian healthcare professionals.",
+        title: "Ayurvedic Stress Relief & Immunity Booster Gift Set",
+        description: "Carefully curated collection of authentic Ayurvedic products including Ashwagandha supplements, herbal teas, and aromatherapy oils. Specifically designed for healthcare professionals dealing with high-stress environments in Indian hospitals.",
         category: "Wellness",
-        priceRange: "₹2,800-4,000",
+        priceRange: "₹3,200-4,800",
         rating: 4.6,
-        features: ["Ayurvedic Products", "Stress Relief", "Cultural Relevance"],
-        suitableFor: ["Healthcare Professionals", "Wellness Programs"],
-        availability: "Pan-India delivery"
+        features: ["100% Natural Ingredients", "AYUSH Certified", "Stress Relief Formula", "Immunity Boosting", "Premium Packaging"],
+        suitableFor: ["Hospital Staff", "Pharmaceutical Researchers", "Healthcare Administrators"],
+        availability: "Pan-India delivery with temperature-controlled shipping",
+        imageUrl: "https://images.pexels.com/photos/3683074/pexels-photo-3683074.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop"
       },
       {
-        title: "Digital Health Monitoring Kit",
-        description: "Modern health monitoring devices with Indian language support and telemedicine integration for healthcare professionals.",
+        title: "Smart Health Monitoring Kit with Indian Language Support",
+        description: "Comprehensive digital health monitoring system including BP monitor, glucometer, and pulse oximeter with Hindi and regional language support. Ideal for telemedicine initiatives and rural healthcare programs in India.",
         category: "Technology",
-        priceRange: "₹4,200-6,800",
+        priceRange: "₹6,500-9,200",
         rating: 4.7,
-        features: ["Digital Integration", "Multi-language Support", "Telemedicine Ready"],
-        suitableFor: ["Digital Health Initiatives", "Modern Healthcare"],
-        availability: "Major Indian cities"
+        features: ["Multi-language Display", "Bluetooth Connectivity", "Mobile App Integration", "Cloud Data Storage", "BIS Certified"],
+        suitableFor: ["Rural Healthcare Workers", "Telemedicine Practitioners", "Community Health Officers"],
+        availability: "Available in 28 states with local service support",
+        imageUrl: "https://images.pexels.com/photos/4386466/pexels-photo-4386466.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop"
       }
     ];
   }
