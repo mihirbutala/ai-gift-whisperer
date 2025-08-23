@@ -17,6 +17,7 @@ interface GiftRecommendation {
   features: string[];
   suitableFor: string[];
   availability: string;
+  imageUrl: string;
 }
 
 interface ProductQuoteResult {
