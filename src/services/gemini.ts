@@ -15,6 +15,444 @@ interface GiftRecommendation {
   priceRange: string;
   rating: number;
   features: string[];
+  suitableFor: string[];
+  availability: string;
+  imageUrl: string;
+}
+
+interface ProductQuoteResult {
+  productName: string;
+  suggestedPrice: string;
+  marketComparison: string;
+  confidence: number;
+  recommendations: string[];
+  category: string;
+  features: string[];
+  competitorPrices: string[];
+}
+
+export class GeminiService {
+  private apiKey: string;
+  private baseUrl: string;
+
+  constructor() {
+    this.apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
+    this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
+    
+    if (!this.apiKey) {
+      console.warn('Gemini API key not found. Please set VITE_GEMINI_API_KEY in your environment variables.');
+    }
+  }
+
+  async generateGiftRecommendations(query: string): Promise<GiftRecommendation[]> {
+    if (!this.apiKey) {
+      console.error('Gemini API key is missing');
+      throw new Error('Gemini API key is not configured. Please add VITE_GEMINI_API_KEY to your environment variables.');
+    }
+
+    if (!query.trim()) {
+      throw new Error('Search query cannot be empty');
+    }
+
+    console.log('🔍 Starting Gemini AI Gift Search...');
+    console.log('Query:', query);
+    
+    const result = await this.callGeminiAPI(this.createGiftPrompt(query));
+    return this.parseGiftRecommendations(result);
+  }
+
+  async analyzeProductForQuote(imageBase64?: string, description?: string): Promise<ProductQuoteResult> {
+    if (!this.apiKey) {
+      console.error('Gemini API key is missing');
+      throw new Error('Gemini API key is not configured. Please add VITE_GEMINI_API_KEY to your environment variables.');
+    }
+
+    if (!imageBase64 && !description?.trim()) {
+      throw new Error('Either product image or description is required');
+    }
+
+    console.log('🔍 Starting Gemini AI Product Analysis...');
+    console.log('Has image:', !!imageBase64);
+    console.log('Description:', description);
+    
+    const result = await this.callGeminiAPI(
+      this.createProductPrompt(description), 
+      imageBase64
+    );
+    return this.parseProductQuoteResult(result);
+  }
+
+  private async callGeminiAPI(prompt: string, imageBase64?: string, retries: number = 3): Promise<string> {
+    const apiUrl = `${this.baseUrl}/gemini-1.5-flash:generateContent?key=${this.apiKey}`;
+
+    const requestBody: any = {
+      contents: [{
+        parts: []
+      }],
+      generationConfig: {
+        temperature: 0.1,
+        topK: 1,
+        topP: 0.1,
+        maxOutputTokens: 4096,
+        candidateCount: 1
+      },
+      safetySettings: [
+        {
+          category: "HARM_CATEGORY_HARASSMENT",
+          threshold: "BLOCK_NONE"
+        },
+        {
+          category: "HARM_CATEGORY_HATE_SPEECH",
+          threshold: "BLOCK_NONE"
+        },
+        {
+          category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+          threshold: "BLOCK_NONE"
+        },
+        {
+          category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+          threshold: "BLOCK_NONE"
+        }
+      ]
+    };
+
+    // Add image if provided
+    if (imageBase64) {
+      requestBody.contents[0].parts.push({
+        inline_data: {
+          mime_type: "image/jpeg",
+          data: imageBase64.split(',')[1]
+        }
+      });
+    }
+
+    // Add text prompt
+    requestBody.contents[0].parts.push({
+      text: prompt
+    });
+
+    for (let attempt = 1; attempt <= retries; attempt++) {
+      try {
+        console.log(`🚀 Calling Gemini API (attempt ${attempt}/${retries})...`);
+        
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        });
+
+        console.log('📡 Response status:', response.status);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('❌ API Error Response:', errorText);
+          
+          if (response.status === 429 && attempt < retries) {
+            const delay = Math.pow(2, attempt) * 1000;
+            console.log(`⏳ Rate limited, waiting ${delay}ms before retry...`);
+            await new Promise(resolve => setTimeout(resolve, delay));
+            continue;
+          }
+          
+          throw new Error(`Gemini API error: ${response.status} ${response.statusText} - ${errorText}`);
+        }
+
+        const data: GeminiResponse = await response.json();
+        console.log('✅ Raw Gemini Response:', JSON.stringify(data, null, 2));
+        
+        const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+        if (!content) {
+          console.error('❌ No content in response:', data);
+          throw new Error('No content received from Gemini API');
+        }
+
+        console.log('📝 Gemini AI Raw Output:');
+        console.log('='.repeat(50));
+        console.log(content);
+        console.log('='.repeat(50));
+        
+        return content;
+        
+      } catch (error) {
+        console.error(`❌ Attempt ${attempt} failed:`, error);
+        
+        if (attempt === retries) {
+          throw error;
+        }
+        
+        const delay = Math.pow(2, attempt) * 1000;
+        console.log(`⏳ Waiting ${delay}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+    
+    throw new Error('All retry attempts failed');
+  }
+
+  private createGiftPrompt(query: string): string {
+    return `You are an AI assistant specialized in Indian pharmaceutical gifting. 
+
+Query: "${query}"
+
+Generate EXACTLY 3 gift recommendations. Respond with ONLY valid JSON array, no other text:
+
+[
+  {
+    "title": "Specific product name",
+    "description": "Detailed description for Indian pharmaceutical professionals",
+    "category": "Product category",
+    "priceRange": "₹X,XXX-X,XXX",
+    "rating": 4.5,
+    "features": ["Feature 1", "Feature 2", "Feature 3"],
+    "suitableFor": ["Professional type 1", "Professional type 2"],
+    "availability": "Availability info",
+    "imageUrl": "https://images.pexels.com/photos/XXXXX/pexels-photo-XXXXX.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop"
+  }
+]
+
+Requirements:
+- Indian pharmaceutical market focus
+- Price range ₹1,000-15,000
+- GST compliance
+- Real Pexels image URLs
+- ONLY JSON array, no explanations`;
+  }
+
+  private createProductPrompt(description?: string): string {
+    return `You are an AI assistant for Indian pharmaceutical market analysis.
+
+${description ? `Product: "${description}"` : 'Analyze the product image'}
+
+Respond with ONLY valid JSON object, no other text:
+
+{
+  "productName": "Product name",
+  "suggestedPrice": "₹X,XXX-X,XXX",
+  "marketComparison": "Market comparison text",
+  "confidence": 85,
+  "recommendations": ["Recommendation 1", "Recommendation 2", "Recommendation 3"],
+  "category": "Product category",
+  "features": ["Feature 1", "Feature 2", "Feature 3"],
+  "competitorPrices": ["Competitor 1: ₹X,XXX", "Competitor 2: ₹X,XXX"]
+}
+
+Requirements:
+- Indian market pricing in INR
+- GST considerations
+- Price ranges ₹1,000-15,000
+- ONLY JSON object, no explanations`;
+  }
+
+  private parseGiftRecommendations(content: string): GiftRecommendation[] {
+    console.log('🔄 Parsing Gift Recommendations...');
+    console.log('Raw content to parse:', content);
+    
+    try {
+      // Extract JSON from content
+      const jsonMatch = content.match(/\[[\s\S]*\]/);
+      if (!jsonMatch) {
+        console.error('❌ No JSON array found in content');
+        return this.getFallbackRecommendations();
+      }
+      
+      const jsonStr = jsonMatch[0];
+      console.log('📋 Extracted JSON:', jsonStr);
+      
+      const recommendations = JSON.parse(jsonStr);
+      
+      if (!Array.isArray(recommendations)) {
+        console.error('❌ Parsed content is not an array');
+        return this.getFallbackRecommendations();
+      }
+      
+      console.log('✅ Successfully parsed recommendations:', recommendations.length);
+      return this.validateRecommendations(recommendations);
+      
+    } catch (error) {
+      console.error('❌ JSON parsing failed:', error);
+      console.log('📄 Showing raw content as fallback');
+      return this.getFallbackRecommendations();
+    }
+  }
+
+  private parseProductQuoteResult(content: string): ProductQuoteResult {
+    console.log('🔄 Parsing Product Quote...');
+    console.log('Raw content to parse:', content);
+    
+    try {
+      // Extract JSON from content
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        console.error('❌ No JSON object found in content');
+        return this.getFallbackProductQuote();
+      }
+      
+      const jsonStr = jsonMatch[0];
+      console.log('📋 Extracted JSON:', jsonStr);
+      
+      const result = JSON.parse(jsonStr);
+      console.log('✅ Successfully parsed product quote');
+      return this.validateProductQuoteResult(result);
+      
+    } catch (error) {
+      console.error('❌ JSON parsing failed:', error);
+      console.log('📄 Showing raw content as fallback');
+      return this.getFallbackProductQuote();
+    }
+  }
+
+  private async analyzeProductWithRetry(
+    imageBase64?: string, 
+    description?: string, 
+    retries: number = 3, 
+    delay: number = 1000
+  ): Promise<ProductQuoteResult> {
+
+    const prompt = this.createProductAnalysisPrompt(description);
+
+    const requestBody: any = {
+      contents: [{
+        parts: []
+      }],
+      generationConfig: {
+        temperature: 0.1,
+        topK: 1,
+        topP: 0.1,
+        maxOutputTokens: 2048,
+        candidateCount: 1
+      },
+      safetySettings: [
+        {
+          category: "HARM_CATEGORY_HARASSMENT",
+          threshold: "BLOCK_NONE"
+        },
+        {
+          category: "HARM_CATEGORY_HATE_SPEECH",
+          threshold: "BLOCK_NONE"
+        },
+        {
+          category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
+          threshold: "BLOCK_NONE"
+        },
+        {
+          category: "HARM_CATEGORY_DANGEROUS_CONTENT",
+          threshold: "BLOCK_NONE"
+        }
+      ]
+    };
+
+    // Add image if provided
+    if (imageBase64) {
+      requestBody.contents[0].parts.push({
+        inline_data: {
+          mime_type: "image/jpeg",
+          data: imageBase64.split(',')[1]
+        }
+      });
+    }
+
+    // Add text prompt
+    requestBody.contents[0].parts.push({
+      text: prompt
+    });
+
+    try {
+      console.log('Making product analysis request to Gemini API...');
+      
+      const response = await fetch(`${this.baseUrl}/gemini-1.5-flash:generateContent?key=${this.apiKey}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      console.log('Product analysis response status:', response.status);
+
+      if (!response.ok) {
+        if (response.status === 429 && retries > 0) {
+          console.log(`Rate limit hit, retrying in ${delay}ms... (${retries} retries left)`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+          return this.analyzeProductWithRetry(imageBase64, description, retries - 1, delay * 2);
+        }
+        
+        let errorMessage = `Gemini API error: ${response.status} ${response.statusText}`;
+        
+        try {
+          const errorData = await response.json();
+          if (errorData.error?.message) {
+            errorMessage += ` - ${errorData.error.message}`;
+          }
+          console.error('Gemini API error details:', errorData);
+        } catch (e) {
+          console.error('Could not parse error response');
+        }
+        
+        throw new Error(errorMessage);
+      }
+
+      const data: GeminiResponse = await response.json();
+      console.log('Gemini product analysis response received:', data);
+      
+      const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (!content) {
+        console.error('No content in Gemini response:', data);
+        throw new Error('No content received from Gemini API. The response may have been blocked by safety filters.');
+      }
+
+      console.log('Raw product analysis content from Gemini:', content);
+      return this.parseProductQuoteResult(content);
+    } catch (error) {
+      console.error('Error calling Gemini API for product analysis:', error);
+      
+      if (error instanceof Error) {
+        throw error;
+      } else {
+        throw new Error('Unknown error occurred while calling Gemini API');
+      }
+    }
+  }
+
+  private createProductAnalysisPrompt(description?: string): string {
+    return `
+You are an AI assistant specialized in Indian pharmaceutical market analysis. 
+${description ? `Analyze this product: "${description}"` : 'Analyze the product in the image'} for the Indian pharmaceutical gifting market.
+
+You must respond with ONLY a valid JSON object, no other text.
+
+Required JSON structure:
+{
+  "productName": "Identified or suggested product name",
+  "suggestedPrice": "₹2,500-3,800",
+  "marketComparison": "5% below Indian market average",
+  "confidence": 85,
+  "recommendations": [
+    "Specific recommendation 1 for Indian market",
+    "Specific recommendation 2 with GST considerations",
+    "Specific recommendation 3 for pharmaceutical gifting"
+  ],
+  "category": "Product category",
+  "features": ["Key feature 1", "Key feature 2", "Key feature 3"],
+  "competitorPrices": ["Competitor 1: ₹2,800-3,200", "Competitor 2: ₹3,500-4,000", "Market range: ₹2,500-4,500"]
+}
+
+Requirements:
+- Focus on Indian pharmaceutical industry standards
+- Include 18% GST implications
+- Consider regional pricing variations
+- Include bulk pricing options
+- Ensure regulatory compliance
+- Use price ranges (e.g., ₹2,500-3,800) instead of single prices
+- All prices should be in INR with proper formatting
+- Price ranges should reflect market reality: ₹1,000 to ₹15,000
+
+CRITICAL: Return ONLY the JSON object. No explanations, no markdown, no additional text.
+`;
+  }
 
   private validateProductQuoteResult(result: any): ProductQuoteResult {
     return {
@@ -180,37 +618,6 @@ Requirements:
 
 CRITICAL: Return ONLY the JSON array. No explanations, no markdown, no additional text.
 `;
-  }
-
-  private parseGiftRecommendations(content: string): GiftRecommendation[] {
-    try {
-      // Clean the content more aggressively
-      let cleanContent = content.trim();
-      
-      // Remove any markdown code blocks
-      cleanContent = cleanContent.replace(/```json\s*/g, '').replace(/```\s*/g, '');
-      
-      // Remove any leading/trailing text that's not JSON
-      const jsonStart = cleanContent.indexOf('[');
-      const jsonEnd = cleanContent.lastIndexOf(']') + 1;
-      
-      if (jsonStart !== -1 && jsonEnd > jsonStart) {
-        cleanContent = cleanContent.substring(jsonStart, jsonEnd);
-      }
-      
-      const recommendations = JSON.parse(cleanContent);
-
-      if (!Array.isArray(recommendations)) {
-        throw new Error('Response is not an array');
-      }
-
-      return this.validateRecommendations(recommendations);
-    } catch (error) {
-      console.error('Error parsing Gemini response:', error);
-      console.log('Raw response content:', content);
-      // Return fallback recommendations if parsing fails
-      return this.getFallbackRecommendations();
-    }
   }
 
   private validateRecommendations(recommendations: any[]): GiftRecommendation[] {
