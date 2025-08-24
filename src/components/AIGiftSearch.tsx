@@ -48,7 +48,11 @@ export const AIGiftSearch = () => {
       // Record the search
       await recordSearch(searchQuery, 'ai_search');
       
-      const recommendations = await geminiService.generateGiftRecommendations(searchQuery);
+      // Add the specified prompt prefix to the user's query
+      const modifiedQuery = `Suggest me unique gift related to (${searchQuery}) give me 4 products with proper product images and description and approx rates`;
+      console.log('Modified query sent to Gemini:', modifiedQuery);
+      
+      const recommendations = await geminiService.generateGiftRecommendations(modifiedQuery);
       console.log('Received recommendations:', recommendations);
       
       setResults(recommendations);
