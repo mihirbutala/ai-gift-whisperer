@@ -210,17 +210,10 @@ Generate EXACTLY 4 gift recommendations. Respond with ONLY valid JSON array, no 
     "suitableFor": ["Professional type 1", "Professional type 2"],
     "availability": "Availability info",
     "imageUrl": "https://images.pexels.com/photos/XXXXX/pexels-photo-XXXXX.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop"
-  }
-]
-
 Requirements:
-- Indian pharmaceutical market focus
 - Price range ₹1,000-15,000
 - GST compliance
 - Real Pexels image URLs
-- Proper product images that match the product type
-- Detailed descriptions with specific benefits
-- Approximate rates in INR with realistic pricing
 - ONLY JSON array, no explanations`;
   }
 
