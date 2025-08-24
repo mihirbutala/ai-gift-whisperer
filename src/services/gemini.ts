@@ -665,47 +665,47 @@ CRITICAL: Return ONLY the JSON array. No explanations, no markdown, no additiona
   private getFallbackRecommendations(): GiftRecommendation[] {
     return [
       {
-        title: "Premium Digital Stethoscope with Bluetooth Connectivity",
-        description: "Advanced digital stethoscope with Bluetooth connectivity and mobile app integration, perfect for modern Indian healthcare professionals. Features noise cancellation and recording capabilities for better patient care documentation. Includes Hindi language support and works seamlessly with Indian healthcare management systems.",
-        category: "Conference Gifts",
-        priceRange: "₹8,500-12,200",
+        title: "Basic Digital Thermometer with Memory Function",
+        description: "Accurate digital thermometer with memory function and fever alarm, perfect for Indian healthcare professionals. Features quick 10-second reading and automatic shut-off to save battery. Includes protective case and works reliably in Indian climate conditions.",
+        category: "Medical Equipment",
+        priceRange: "₹450-650",
         rating: 4.8,
-        features: ["Bluetooth Connectivity", "Mobile App Integration", "Noise Cancellation", "GST Compliant", "2-Year Warranty"],
-        suitableFor: ["Cardiologists", "General Physicians", "Medical Students"],
+        features: ["Memory Function", "Fever Alarm", "Quick Reading", "GST Compliant", "1-Year Warranty"],
+        suitableFor: ["General Physicians", "Nurses", "Medical Students"],
         availability: "Available across India with same-day delivery in metro cities",
         imageUrl: "https://images.pexels.com/photos/40568/medical-appointment-doctor-healthcare-40568.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop"
       },
       {
-        title: "Ayurvedic Stress Relief & Immunity Booster Gift Set",
-        description: "Carefully curated collection of authentic Ayurvedic products including Ashwagandha supplements, herbal teas, and aromatherapy oils. Specifically designed for healthcare professionals dealing with high-stress environments in Indian hospitals. Each product is AYUSH certified and sourced from traditional Indian manufacturers with proven efficacy.",
+        title: "Herbal Tea & Wellness Kit",
+        description: "Carefully curated collection of authentic herbal teas including tulsi, ginger, and immunity-boosting blends. Specifically designed for healthcare professionals dealing with high-stress environments in Indian hospitals. Each product is AYUSH certified and sourced from traditional Indian manufacturers.",
         category: "Wellness",
-        priceRange: "₹3,200-4,800",
+        priceRange: "₹650-850",
         rating: 4.6,
-        features: ["100% Natural Ingredients", "AYUSH Certified", "Stress Relief Formula", "Immunity Boosting", "Premium Packaging"],
+        features: ["100% Natural Ingredients", "AYUSH Certified", "Stress Relief Formula", "Immunity Boosting", "Gift Packaging"],
         suitableFor: ["Hospital Staff", "Pharmaceutical Researchers", "Healthcare Administrators"],
         availability: "Pan-India delivery with temperature-controlled shipping",
         imageUrl: "https://images.pexels.com/photos/3683074/pexels-photo-3683074.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop"
       },
       {
-        title: "Smart Health Monitoring Kit with Indian Language Support",
-        description: "Comprehensive digital health monitoring system including BP monitor, glucometer, and pulse oximeter with Hindi and regional language support. Ideal for telemedicine initiatives and rural healthcare programs in India. Features cloud connectivity and integration with government health schemes like Ayushman Bharat.",
-        category: "Technology",
-        priceRange: "₹6,500-9,200",
+        title: "Basic Pulse Oximeter with Digital Display",
+        description: "Compact pulse oximeter with clear digital display and accurate readings, perfect for basic health monitoring. Ideal for healthcare professionals working in rural areas and community health programs in India. Features simple operation and long battery life.",
+        category: "Medical Equipment",
+        priceRange: "₹750-950",
         rating: 4.7,
-        features: ["Multi-language Display", "Bluetooth Connectivity", "Mobile App Integration", "Cloud Data Storage", "BIS Certified"],
+        features: ["Digital Display", "Accurate Readings", "Long Battery Life", "Compact Design", "BIS Certified"],
         suitableFor: ["Rural Healthcare Workers", "Telemedicine Practitioners", "Community Health Officers"],
         availability: "Available in 28 states with local service support",
         imageUrl: "https://images.pexels.com/photos/4386466/pexels-photo-4386466.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop"
       }
       ,
       {
-        title: "Professional Medical Reference Books Collection",
-        description: "Comprehensive collection of latest medical reference books including Indian Pharmacopoeia, drug interaction guides, and clinical practice guidelines. Updated with latest Indian medical regulations and includes digital access codes for online resources. Perfect for continuous medical education and professional development.",
+        title: "Medical Reference Handbook & Quick Guide Set",
+        description: "Essential medical reference handbook with drug interaction guide and clinical practice quick cards. Updated with latest Indian medical regulations and includes laminated reference cards for easy use. Perfect for medical students and junior doctors for quick reference during practice.",
         category: "Educational Materials",
-        priceRange: "₹4,500-6,800",
+        priceRange: "₹550-750",
         rating: 4.5,
-        features: ["Latest Edition", "Digital Access Included", "Indian Medical Guidelines", "Professional Binding", "Quick Reference Cards"],
-        suitableFor: ["Medical Practitioners", "Pharmacy Students", "Healthcare Researchers"],
+        features: ["Latest Edition", "Laminated Cards", "Indian Medical Guidelines", "Pocket Size", "Quick Reference"],
+        suitableFor: ["Medical Students", "Junior Doctors", "Nursing Students"],
         availability: "Available through major Indian medical bookstores and online platforms",
         imageUrl: "https://images.pexels.com/photos/159711/books-bookstore-book-reading-159711.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop"
       }
