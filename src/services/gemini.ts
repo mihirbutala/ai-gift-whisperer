@@ -192,8 +192,27 @@ export class GeminiService {
     throw new Error('All retry attempts failed');
   }
 
+  private createGiftPrompt(query: string): string {
+    return `You are an AI assistant specialized in Indian pharmaceutical gifting and medical products. Based on this query: "${query}"
+
+Generate exactly 4 highly relevant and specific gift recommendations for Indian pharmaceutical professionals. You must respond with ONLY a valid JSON array, no other text.
+
+Required JSON structure:
+
+[
+  {
+    "title": "Specific product name",
+    "description": "Detailed description",
+    "category": "Product category",
+    "priceRange": "₹X,XXX-X,XXX",
+    "rating": 4.5,
+    "features": ["Feature 1", "Feature 2", "Feature 3"],
     "suitableFor": ["Professional type 1", "Professional type 2"],
     "availability": "Availability info",
+    "imageUrl": "https://images.pexels.com/photos/[id]/pexels-photo-[id].jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop"
+  }
+]
+
 Requirements:
 - Price range ₹1,000-15,000
 - ONLY JSON array, no explanations`;
@@ -671,8 +690,7 @@ CRITICAL: Return ONLY the JSON array. No explanations, no markdown, no additiona
         suitableFor: ["Rural Healthcare Workers", "Telemedicine Practitioners", "Community Health Officers"],
         availability: "Available in 28 states with local service support",
         imageUrl: "https://images.pexels.com/photos/4386466/pexels-photo-4386466.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop"
-      }
-      ,
+      },
       {
         title: "Medical Reference Handbook & Quick Guide Set",
         description: "Essential medical reference handbook with drug interaction guide and clinical practice quick cards. Updated with latest Indian medical regulations and includes laminated reference cards for easy use. Perfect for medical students and junior doctors for quick reference during practice.",
