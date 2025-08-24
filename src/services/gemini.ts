@@ -192,28 +192,10 @@ export class GeminiService {
     throw new Error('All retry attempts failed');
   }
 
-  private createGiftPrompt(query: string): string {
-    return `You are an AI assistant specialized in Indian pharmaceutical gifting. 
-
-Query: "${query}"
-
-Generate EXACTLY 4 gift recommendations. Respond with ONLY valid JSON array, no other text:
-
-[
-  {
-    "title": "Specific product name",
-    "description": "Detailed description for Indian pharmaceutical professionals",
-    "category": "Product category",
-    "priceRange": "₹X,XXX-X,XXX",
-    "rating": 4.5,
-    "features": ["Feature 1", "Feature 2", "Feature 3"],
     "suitableFor": ["Professional type 1", "Professional type 2"],
     "availability": "Availability info",
-    "imageUrl": "https://images.pexels.com/photos/XXXXX/pexels-photo-XXXXX.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop"
 Requirements:
 - Price range ₹1,000-15,000
-- GST compliance
-- Real Pexels image URLs
 - ONLY JSON array, no explanations`;
   }
 
