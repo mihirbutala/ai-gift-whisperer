@@ -304,7 +304,7 @@ export const ProductQuote = () => {
                 </div>
               )}
             </div>
-          </div>
+          </Card>
         </div>
       )}
 
