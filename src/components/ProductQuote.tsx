@@ -23,7 +23,7 @@ interface ProductQuoteResult {
 export const ProductQuote = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [uploadedImage, setUploadedImage] = useState<string>('');
   const [productDescription, setProductDescription] = useState("");
   const [quoteResult, setQuoteResult] = useState<ProductQuoteResult | null>(null);
   const [error, setError] = useState<string | null>(null);
