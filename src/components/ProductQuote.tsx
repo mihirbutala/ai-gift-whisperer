@@ -205,15 +205,104 @@ export const ProductQuote = () => {
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-sm font-medium text-foreground">
             <TrendingUp className="h-4 w-4 text-accent" />
-            Gemini AI Raw Output
+            Product Analysis Results
           </div>
 
-          <div className="p-4 bg-black text-green-400 border border-border rounded-lg font-mono text-sm whitespace-pre-wrap">
-            <div className="space-y-3">
-              <div className="text-yellow-400 font-bold">GEMINI AI OUTPUT:</div>
-              <div className="border-t border-green-600 pt-2">
-                {JSON.stringify(quoteResult, null, 2)}
+          <Card className="overflow-hidden shadow-soft glass-effect">
+            <div className="p-6 space-y-6">
+              {/* Product Header */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-bold text-foreground">
+                    {quoteResult.productName}
+                  </h3>
+                  <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20">
+                    {quoteResult.category}
+                  </Badge>
+                </div>
+                
+                {/* Confidence Score */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-muted-foreground">Analysis Confidence:</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-20 h-2 bg-muted rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-accent rounded-full transition-all duration-500"
+                        style={{ width: `${quoteResult.confidence}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-medium text-accent">{quoteResult.confidence}%</span>
+                  </div>
+                </div>
               </div>
+
+              {/* Pricing Section */}
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <DollarSign className="h-4 w-4 text-accent" />
+                    Suggested Price Range
+                  </h4>
+                  <div className="text-2xl font-bold text-accent">
+                    {quoteResult.suggestedPrice}
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <h4 className="text-sm font-medium text-foreground flex items-center gap-2">
+                    <TrendingUp className="h-4 w-4 text-success" />
+                    Market Comparison
+                  </h4>
+                  <p className="text-sm text-muted-foreground">
+                    {quoteResult.marketComparison}
+                  </p>
+                </div>
+              </div>
+
+              {/* Features */}
+              {quoteResult.features && quoteResult.features.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="text-sm font-medium text-foreground">Key Features:</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {quoteResult.features.map((feature, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        <CheckCircle className="h-3 w-3 mr-1" />
+                        {feature}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Recommendations */}
+              {quoteResult.recommendations && quoteResult.recommendations.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="text-sm font-medium text-foreground">AI Recommendations:</h4>
+                  <div className="space-y-2">
+                    {quoteResult.recommendations.map((recommendation, index) => (
+                      <div key={index} className="flex items-start gap-2 p-3 bg-muted/30 rounded-lg">
+                        <Sparkles className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
+                        <p className="text-sm text-muted-foreground">{recommendation}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Competitor Prices */}
+              {quoteResult.competitorPrices && quoteResult.competitorPrices.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="text-sm font-medium text-foreground">Market Comparison:</h4>
+                  <div className="grid gap-2">
+                    {quoteResult.competitorPrices.map((price, index) => (
+                      <div key={index} className="flex items-center justify-between p-2 bg-muted/20 rounded">
+                        <span className="text-sm text-muted-foreground">{price.split(':')[0]}:</span>
+                        <span className="text-sm font-medium text-foreground">{price.split(':')[1]}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>

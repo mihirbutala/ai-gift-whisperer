@@ -153,16 +153,95 @@ export const AIGiftSearch = () => {
         <div className="space-y-4">
           <div className="flex items-center gap-2 text-sm font-medium text-foreground">
             <Gift className="h-4 w-4 text-accent" />
-            Gemini AI Raw Output
+            AI-Powered Gift Recommendations
           </div>
           
-          <div className="p-4 bg-black text-green-400 border border-border rounded-lg font-mono text-sm whitespace-pre-wrap">
-            <div className="space-y-3">
-              <div className="text-yellow-400 font-bold">GEMINI AI OUTPUT:</div>
-              <div className="border-t border-green-600 pt-2">
-                {JSON.stringify(results, null, 2)}
-              </div>
-            </div>
+          <div className="grid gap-6 md:grid-cols-2">
+            {results.map((gift, index) => (
+              <Card key={index} className="overflow-hidden shadow-soft hover:shadow-medium transition-all duration-300 hover:scale-[1.02] glass-effect">
+                {/* Product Image */}
+                <div className="relative h-48 overflow-hidden">
+                  <img
+                    src={gift.imageUrl}
+                    alt={gift.title}
+                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-110"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = 'https://images.pexels.com/photos/3683074/pexels-photo-3683074.jpeg?auto=compress&cs=tinysrgb&w=600&h=400&fit=crop';
+                    }}
+                  />
+                  <div className="absolute top-3 right-3">
+                    <Badge variant="secondary" className="bg-background/80 backdrop-blur-sm">
+                      {gift.category}
+                    </Badge>
+                  </div>
+                  <div className="absolute bottom-3 left-3">
+                    <div className="flex items-center gap-1 bg-background/80 backdrop-blur-sm px-2 py-1 rounded-full">
+                      <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+                      <span className="text-xs font-medium">{gift.rating}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Product Details */}
+                <div className="p-6 space-y-4">
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-semibold text-foreground line-clamp-2">
+                      {gift.title}
+                    </h3>
+                    <p className="text-sm text-muted-foreground line-clamp-3">
+                      {gift.description}
+                    </p>
+                  </div>
+
+                  {/* Price Range */}
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="bg-accent/10 text-accent border-accent/20">
+                      {gift.priceRange}
+                    </Badge>
+                  </div>
+
+                  {/* Features */}
+                  {gift.features && gift.features.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium text-foreground">Key Features:</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {gift.features.slice(0, 3).map((feature, featureIndex) => (
+                          <Badge key={featureIndex} variant="secondary" className="text-xs">
+                            {feature}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Suitable For */}
+                  {gift.suitableFor && gift.suitableFor.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium text-foreground">Suitable For:</h4>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Users className="h-3 w-3" />
+                        <span>{gift.suitableFor.join(', ')}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Availability */}
+                  {gift.availability && (
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <MapPin className="h-3 w-3" />
+                      <span>{gift.availability}</span>
+                    </div>
+                  )}
+
+                  {/* Action Button */}
+                  <Button variant="outline" className="w-full mt-4">
+                    <CheckCircle className="h-4 w-4" />
+                    Select This Gift
+                  </Button>
+                </div>
+              </Card>
+            ))}
           </div>
         </div>
       )}
