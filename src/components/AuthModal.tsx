@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Mail, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { toast } from '@/components/ui/sonner'
@@ -19,8 +18,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
-    password: '',
-    fullName: ''
+    password: ''
   })
 
   const getErrorMessage = (error: any) => {
@@ -73,68 +71,6 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     }
   }
 
-  const handleEmailSignUp = async () => {
-    if (!formData.email || !formData.password) {
-      toast.error('Please fill in all required fields')
-      return
-    }
-
-    if (formData.password.length < 6) {
-      toast.error('Password must be at least 6 characters long')
-      return
-    }
-    setLoading(true)
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            full_name: formData.fullName
-          }
-        }
-      })
-
-      if (error) {
-        const errorMessage = getErrorMessage(error);
-        toast.error(`Sign Up Failed: ${errorMessage}`)
-        // Clear password on error to prevent repeated failed attempts
-        setFormData(prev => ({ ...prev, password: '' }))
-        return
-      }
-
-      if (data.user) {
-        // Create user profile if user is confirmed
-        if (data.user.email_confirmed_at) {
-          const { error: profileError } = await supabase
-            .from('user_profiles')
-            .insert({
-              user_id: data.user.id,
-              email: formData.email,
-              full_name: formData.fullName
-            })
-
-          if (profileError) {
-            console.error('Profile creation error:', profileError)
-          }
-
-          toast.success('Account created and signed in successfully!')
-          onSuccess?.()
-          onClose()
-        } else {
-          toast.success('Check Your Email - We\'ve sent you a confirmation link. Please check your email and click the link to complete your registration.')
-          // Don't close modal yet, let user know to check email
-        }
-      }
-    } catch (error) {
-      const errorMessage = getErrorMessage(error);
-      toast.error(`Sign Up Failed: ${errorMessage}`)
-      console.error('Sign up error:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const handleEmailSignIn = async () => {
     if (!formData.email || !formData.password) {
       toast.error('Please fill in email and password')
@@ -165,8 +101,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
           .from('user_profiles')
           .upsert({
             user_id: userData.user.id,
-            email: formData.email,
-            full_name: userData.user.user_metadata?.full_name || formData.fullName || null
+            email: formData.email
           })
 
         if (profileError) {
@@ -188,8 +123,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
   const resetForm = () => {
     setFormData({
       email: '',
-      password: '',
-      fullName: ''
+      password: ''
     })
     setShowPassword(false)
   }
@@ -238,115 +172,51 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
             </div>
           </div>
 
-          <Tabs defaultValue="signin" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="signin">Sign In</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="signin" className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="signin-email">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="signin-email"
-                    type="email"
-                    placeholder="Enter your email"
-                    className="pl-10"
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="signin-password">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="signin-password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    className="pr-10"
-                    value={formData.password}
-                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <Button onClick={handleEmailSignIn} disabled={loading} className="w-full">
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Sign In'}
-              </Button>
-            </TabsContent>
-
-            <TabsContent value="signup" className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="signup-name">Full Name</Label>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="signin-email">Email</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
-                  id="signup-name"
-                  type="text"
-                  placeholder="Enter your full name"
-                  value={formData.fullName}
-                  onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
+                  id="signin-email"
+                  type="email"
+                  placeholder="Enter your email"
+                  className="pl-10"
+                  value={formData.email}
+                  onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                 />
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="signup-email">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="Enter your email"
-                    className="pl-10"
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                  />
-                </div>
+            <div className="space-y-2">
+              <Label htmlFor="signin-password">Password</Label>
+              <div className="relative">
+                <Input
+                  id="signin-password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  className="pr-10"
+                  value={formData.password}
+                  onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </button>
               </div>
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="signup-password">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="signup-password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Create a password (min 6 characters)"
-                    className="pr-10"
-                    value={formData.password}
-                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <Button onClick={handleEmailSignUp} disabled={loading} className="w-full">
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Sign Up'}
-              </Button>
-            </TabsContent>
-          </Tabs>
+            <Button onClick={handleEmailSignIn} disabled={loading} className="w-full">
+              {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Sign In'}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
