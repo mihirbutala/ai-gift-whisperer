@@ -36,20 +36,12 @@ export class GeminiService {
   private baseUrl: string;
 
   constructor() {
-    this.apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
-    this.baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
-    
-    if (!this.apiKey) {
-      console.warn('Gemini API key not found. Please set VITE_GEMINI_API_KEY in your environment variables.');
-    }
+    // Use Supabase edge function instead of direct API calls
+    this.apiKey = 'edge-function'; // Placeholder - will use edge function
+    this.baseUrl = 'https://ynkmybzvohjyiqxouaqu.supabase.co/functions/v1';
   }
 
   async generateGiftRecommendations(query: string): Promise<GiftRecommendation[]> {
-    if (!this.apiKey) {
-      console.error('Gemini API key is missing');
-      throw new Error('Gemini API key is not configured. Please add VITE_GEMINI_API_KEY to your environment variables.');
-    }
-
     if (!query.trim()) {
       throw new Error('Search query cannot be empty');
     }
@@ -57,16 +49,15 @@ export class GeminiService {
     console.log('🔍 Starting Gemini AI Gift Search...');
     console.log('Query:', query);
     
-    const result = await this.callGeminiAPI(this.createGiftPrompt(query));
-    return this.parseGiftRecommendations(result);
+    const result = await this.callEdgeFunction('gemini-ai', {
+      query,
+      type: 'gifts'
+    });
+    
+    return result.data;
   }
 
   async analyzeProductForQuote(imageBase64?: string, description?: string): Promise<ProductQuoteResult> {
-    if (!this.apiKey) {
-      console.error('Gemini API key is missing');
-      throw new Error('Gemini API key is not configured. Please add VITE_GEMINI_API_KEY to your environment variables.');
-    }
-
     if (!imageBase64 && !description?.trim()) {
       throw new Error('Either product image or description is required');
     }
@@ -75,121 +66,48 @@ export class GeminiService {
     console.log('Has image:', !!imageBase64);
     console.log('Description:', description);
     
-    const result = await this.callGeminiAPI(
-      this.createProductPrompt(description), 
-      imageBase64
-    );
-    return this.parseProductQuoteResult(result);
+    const result = await this.callEdgeFunction('gemini-ai', {
+      imageBase64,
+      description,
+      type: 'product-quote'
+    });
+    
+    return result.data;
   }
 
-  private async callGeminiAPI(prompt: string, imageBase64?: string, retries: number = 3): Promise<string> {
-    const apiUrl = `${this.baseUrl}/gemini-1.5-flash:generateContent?key=${this.apiKey}`;
-
-    const requestBody: any = {
-      contents: [{
-        parts: []
-      }],
-      generationConfig: {
-        temperature: 0.1,
-        topK: 1,
-        topP: 0.1,
-        maxOutputTokens: 4096,
-        candidateCount: 1
-      },
-      safetySettings: [
-        {
-          category: "HARM_CATEGORY_HARASSMENT",
-          threshold: "BLOCK_NONE"
+  private async callEdgeFunction(functionName: string, payload: any): Promise<any> {
+    try {
+      console.log(`🚀 Calling edge function: ${functionName}`);
+      
+      const response = await fetch(`${this.baseUrl}/${functionName}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
         },
-        {
-          category: "HARM_CATEGORY_HATE_SPEECH",
-          threshold: "BLOCK_NONE"
-        },
-        {
-          category: "HARM_CATEGORY_SEXUALLY_EXPLICIT",
-          threshold: "BLOCK_NONE"
-        },
-        {
-          category: "HARM_CATEGORY_DANGEROUS_CONTENT",
-          threshold: "BLOCK_NONE"
-        }
-      ]
-    };
-
-    // Add image if provided
-    if (imageBase64) {
-      requestBody.contents[0].parts.push({
-        inline_data: {
-          mime_type: "image/jpeg",
-          data: imageBase64.split(',')[1]
-        }
+        body: JSON.stringify(payload),
       });
-    }
 
-    // Add text prompt
-    requestBody.contents[0].parts.push({
-      text: prompt
-    });
+      console.log('📡 Response status:', response.status);
 
-    for (let attempt = 1; attempt <= retries; attempt++) {
-      try {
-        console.log(`🚀 Calling Gemini API (attempt ${attempt}/${retries})...`);
-        
-        const response = await fetch(apiUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
-        });
-
-        console.log('📡 Response status:', response.status);
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error('❌ API Error Response:', errorText);
-          
-          if (response.status === 429 && attempt < retries) {
-            const delay = Math.pow(2, attempt) * 1000;
-            console.log(`⏳ Rate limited, waiting ${delay}ms before retry...`);
-            await new Promise(resolve => setTimeout(resolve, delay));
-            continue;
-          }
-          
-          throw new Error(`Gemini API error: ${response.status} ${response.statusText} - ${errorText}`);
-        }
-
-        const data: GeminiResponse = await response.json();
-        console.log('✅ Raw Gemini Response:', JSON.stringify(data, null, 2));
-        
-        const content = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-        if (!content) {
-          console.error('❌ No content in response:', data);
-          throw new Error('No content received from Gemini API');
-        }
-
-        console.log('📝 Gemini AI Raw Output:');
-        console.log('='.repeat(50));
-        console.log(content);
-        console.log('='.repeat(50));
-        
-        return content;
-        
-      } catch (error) {
-        console.error(`❌ Attempt ${attempt} failed:`, error);
-        
-        if (attempt === retries) {
-          throw error;
-        }
-        
-        const delay = Math.pow(2, attempt) * 1000;
-        console.log(`⏳ Waiting ${delay}ms before retry...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Edge function error:', errorText);
+        throw new Error(`Edge function error: ${response.status} ${response.statusText}`);
       }
+
+      const result = await response.json();
+      console.log('✅ Edge function response received');
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Edge function failed');
+      }
+      
+      return result;
+      
+    } catch (error) {
+      console.error(`❌ Edge function call failed:`, error);
+      throw error;
     }
-    
-    throw new Error('All retry attempts failed');
   }
 
   private createGiftPrompt(query: string): string {
