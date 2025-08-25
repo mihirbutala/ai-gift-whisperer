@@ -492,7 +492,7 @@ CRITICAL: Return ONLY the JSON object. No explanations, no markdown, no addition
     try {
       console.log('Making request to Gemini API...');
       
-      const response = await fetch(`${this.apiUrl}?key=${this.apiKey}`, {
+      const response = await fetch(`${this.baseUrl}/gemini-1.5-flash:generateContent?key=${this.apiKey}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
