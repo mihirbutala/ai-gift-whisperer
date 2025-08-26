@@ -1,13 +1,11 @@
 import { useState } from "react";
-import { Search, Sparkles, Gift, Star, CheckCircle, Users, MapPin, AlertCircle, Lock } from "lucide-react";
+import { Search, Sparkles, Gift, Star, CheckCircle, Users, MapPin, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { geminiService } from "@/services/gemini";
 import { toast } from "@/components/ui/sonner";
-import { useSearchTracking } from "@/hooks/useSearchTracking";
-import { AuthModal } from "./AuthModal";
 
 interface GiftRecommendation {
   title: string;
@@ -26,17 +24,9 @@ export const AIGiftSearch = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<GiftRecommendation[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const { canSearch, recordSearch, requiresAuth } = useSearchTracking();
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
-    
-    // Check if user can search
-    if (!canSearch) {
-      setShowAuthModal(true);
-      return;
-    }
     
     setIsLoading(true);
     setError(null);
@@ -44,9 +34,6 @@ export const AIGiftSearch = () => {
     
     try {
       console.log('Starting search with query:', searchQuery);
-      
-      // Record the search
-      await recordSearch(searchQuery, 'ai_search');
       
       // Add the specified prompt prefix to the user's query
       const modifiedQuery = `Suggest me unique gift related to (${searchQuery}) give me 4 products with proper product images and description and approx rates`;
@@ -74,14 +61,6 @@ export const AIGiftSearch = () => {
     }
   };
 
-  const handleAuthSuccess = () => {
-    setShowAuthModal(false);
-    // After successful auth, user can search again
-    if (searchQuery.trim()) {
-      handleSearch();
-    }
-  };
-
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       handleSearch();
@@ -106,18 +85,13 @@ export const AIGiftSearch = () => {
         <Button 
           onClick={handleSearch} 
           disabled={!searchQuery.trim() || isLoading}
-          variant={canSearch ? "hero" : "outline"}
+          variant="hero"
           className="w-full"
         >
           {isLoading ? (
             <>
               <Sparkles className="h-4 w-4 animate-spin" />
               Gemini AI is analyzing your request...
-            </>
-          ) : !canSearch ? (
-            <>
-              <Lock className="h-4 w-4" />
-              Sign in to search
             </>
           ) : (
             <>
@@ -127,13 +101,6 @@ export const AIGiftSearch = () => {
           )}
         </Button>
       </div>
-
-      {/* Auth Modal */}
-      <AuthModal 
-        isOpen={showAuthModal} 
-        onClose={() => setShowAuthModal(false)}
-        onSuccess={handleAuthSuccess}
-      />
 
       {/* Error Display */}
       {error && (
@@ -252,13 +219,10 @@ export const AIGiftSearch = () => {
           <div className="text-center space-y-2">
             <Sparkles className="h-8 w-8 text-accent mx-auto" />
             <h4 className="text-sm font-medium text-foreground">
-              {requiresAuth ? "Sign in to continue searching" : "Ready to find the perfect gifts?"}
+              Ready to find the perfect gifts?
             </h4>
             <p className="text-xs text-muted-foreground">
-              {requiresAuth 
-                ? "You've used your free search. Sign in to get unlimited AI-powered gift recommendations."
-                : 'Try specific queries like: "premium stethoscopes for Indian cardiologists", "Ayurvedic wellness gifts for hospital staff during Diwali", or "digital health monitoring devices for rural healthcare workers"'
-              }
+              Try specific queries like: "premium stethoscopes for Indian cardiologists", "Ayurvedic wellness gifts for hospital staff during Diwali", or "digital health monitoring devices for rural healthcare workers"
             </p>
           </div>
         </Card>
