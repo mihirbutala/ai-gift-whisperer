@@ -18,6 +18,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
   const [showPassword, setShowPassword] = useState(false)
   const [activeTab, setActiveTab] = useState('signin')
   const [errorMessage, setErrorMessage] = useState('')
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -25,6 +26,8 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
   })
 
   const { signUp, signIn, signInWithGoogle } = useAuth()
+
+  const { resetPassword } = useAuth()
 
   const handleGoogleSignIn = async () => {
     setLoading(true)
@@ -91,6 +94,30 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     }
   }
 
+  const handleForgotPassword = async () => {
+    if (!formData.email) {
+      setErrorMessage('Please enter your email address first')
+      return
+    }
+
+    setLoading(true)
+    setErrorMessage('')
+    try {
+      const { error } = await resetPassword(formData.email)
+      if (error) {
+        setErrorMessage(error.message)
+      } else {
+        setShowForgotPassword(false)
+        setErrorMessage('')
+      }
+    } catch (error) {
+      console.error('Forgot password error:', error)
+      setErrorMessage('An unexpected error occurred. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const resetForm = () => {
     setFormData({
       email: '',
@@ -100,6 +127,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     setShowPassword(false)
     setActiveTab('signin')
     setErrorMessage('')
+    setShowForgotPassword(false)
   }
 
   const handleClose = () => {
@@ -110,6 +138,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
   const handleTabChange = (value: string) => {
     setActiveTab(value)
     setErrorMessage('')
+    setShowForgotPassword(false)
   }
 
   return (
@@ -219,6 +248,48 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
                   'Sign In'
                 )}
               </Button>
+
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-sm text-muted-foreground hover:text-primary underline"
+                  disabled={loading}
+                >
+                  Forgot your password?
+                </button>
+              </div>
+
+              {showForgotPassword && (
+                <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
+                  <p className="text-sm text-muted-foreground">
+                    Enter your email address and we'll send you a link to reset your password.
+                  </p>
+                  <Button
+                    onClick={handleForgotPassword}
+                    disabled={!formData.email || loading}
+                    variant="outline"
+                    className="w-full"
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        Sending...
+                      </>
+                    ) : (
+                      'Send Reset Email'
+                    )}
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPassword(false)}
+                    className="text-sm text-muted-foreground hover:text-primary underline w-full"
+                    disabled={loading}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
             </div>
           </TabsContent>
 

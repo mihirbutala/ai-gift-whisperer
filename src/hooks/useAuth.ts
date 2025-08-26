@@ -124,6 +124,28 @@ export const useAuth = () => {
     }
   }
 
+  const resetPassword = async (email: string) => {
+    try {
+      const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`
+      })
+
+      if (error) {
+        console.error("Password reset error:", error.message);
+        toast.error(error.message || 'Failed to send reset email')
+        return { error }
+      } else {
+        console.log("Password reset success:", data);
+        toast.success('Password reset email sent! Check your inbox.')
+        return { data, error: null }
+      }
+    } catch (error: any) {
+      console.error('Password reset error:', error)
+      toast.error(error.message || 'Failed to send reset email')
+      return { data: null, error }
+    }
+  }
+
   const signOut = async () => {
     try {
       const { error } = await supabase.auth.signOut()
@@ -143,6 +165,7 @@ export const useAuth = () => {
     signUp,
     signIn,
     signInWithGoogle,
+    resetPassword,
     signOut,
     isAuthenticated: !!user
   }
