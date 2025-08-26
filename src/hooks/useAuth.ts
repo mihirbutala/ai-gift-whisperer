@@ -1,6 +1,6 @@
 // src/hooks/useAuth.ts
 import { useState } from "react";
-import { supabase } from "../supabaseClient";
+import { supabase } from "@/lib/supabase";
 
 export function useAuth() {
   const [loading, setLoading] = useState(false);
