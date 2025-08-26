@@ -6,6 +6,9 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { geminiService } from "@/services/gemini";
 import { toast } from "@/components/ui/sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { useSearchTracking } from "@/hooks/useSearchTracking";
+import { AuthModal } from "@/components/AuthModal";
 
 interface ProductQuoteResult {
   productName: string;
@@ -25,7 +28,11 @@ export const ProductQuote = () => {
   const [productDescription, setProductDescription] = useState("");
   const [quoteResult, setQuoteResult] = useState<ProductQuoteResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const { isAuthenticated } = useAuth();
+  const { canSearch, recordSearch, requiresAuth } = useSearchTracking();
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -46,6 +53,12 @@ export const ProductQuote = () => {
   const handleGenerateQuote = async () => {
     if (!uploadedImage && !productDescription.trim()) return;
     
+    // Check if authentication is required
+    if (requiresAuth) {
+      setShowAuthModal(true);
+      return;
+    }
+    
     setIsAnalyzing(true);
     setError(null);
     setQuoteResult(null);
@@ -61,6 +74,10 @@ export const ProductQuote = () => {
       );
       
       console.log('Received product analysis result:', result);
+      
+      // Record the search
+      await recordSearch(productDescription || 'Product image analysis', 'product_quote');
+      
       setQuoteResult(result);
       toast.success('Product analysis completed with Gemini AI!');
     } catch (error) {
@@ -135,7 +152,7 @@ export const ProductQuote = () => {
 
         <Button
           onClick={handleGenerateQuote}
-          disabled={(!uploadedImage && !productDescription.trim()) || isAnalyzing}
+          disabled={(!uploadedImage && !productDescription.trim()) || isAnalyzing || (!canSearch && !isAuthenticated)}
           variant="accent"
           className="w-full"
         >
@@ -143,6 +160,11 @@ export const ProductQuote = () => {
             <>
               <Sparkles className="h-4 w-4 animate-spin" />
               AI is analyzing...
+            </>
+          ) : requiresAuth ? (
+            <>
+              <DollarSign className="h-4 w-4" />
+              Sign In to Continue
             </>
           ) : (
             <>
@@ -289,5 +311,12 @@ export const ProductQuote = () => {
         </Card>
       )}
     </div>
+    
+    <AuthModal 
+      isOpen={showAuthModal} 
+      onClose={() => setShowAuthModal(false)}
+      onSuccess={() => setShowAuthModal(false)}
+    />
+    </>
   );
 };

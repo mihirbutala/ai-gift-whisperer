@@ -1,15 +1,32 @@
-import { Sparkles, Menu, X } from "lucide-react";
+import { Sparkles, Menu, X, User, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
+import { AuthModal } from "@/components/AuthModal";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 export const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const location = useLocation();
+  const { user, isAuthenticated, signOut } = useAuth();
 
   const isActive = (path: string) => location.pathname === path;
 
+  const handleSignOut = async () => {
+    await signOut();
+  };
+
   return (
+    <>
     <nav className="relative z-50 glass-effect border-b border-border/50">
       <div className="container mx-auto px-4 lg:px-8">
         <div className="flex items-center justify-between h-16">
@@ -45,9 +62,39 @@ export const Navigation = () => {
               Features
             </Link>
             
-            <Button variant="hero" size="sm">
-              Get Started
-            </Button>
+            {isAuthenticated ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarFallback>
+                        {user?.email?.charAt(0).toUpperCase() || 'U'}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <div className="flex items-center justify-start gap-2 p-2">
+                    <div className="flex flex-col space-y-1 leading-none">
+                      <p className="font-medium">{user?.user_metadata?.full_name || 'User'}</p>
+                      <p className="w-[200px] truncate text-sm text-muted-foreground">
+                        {user?.email}
+                      </p>
+                    </div>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Sign out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button variant="hero" size="sm" onClick={() => setShowAuthModal(true)}>
+                <User className="h-4 w-4 mr-2" />
+                Sign In
+              </Button>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -83,14 +130,43 @@ export const Navigation = () => {
             >
               Features
             </Link>
-            <div className="flex gap-3 pt-4">
-              <Button variant="hero" size="sm" className="flex-1">
-                Get Started
+            <div className="pt-4">
+              {isAuthenticated ? (
+                <div className="space-y-3">
+                  <div className="text-sm">
+                    <p className="font-medium">{user?.user_metadata?.full_name || 'User'}</p>
+                    <p className="text-muted-foreground">{user?.email}</p>
+                  </div>
+                  <Button variant="outline" size="sm" onClick={handleSignOut} className="w-full">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </div>
+              ) : (
+              <Button 
+                variant="hero" 
+                size="sm" 
+                className="w-full"
+                onClick={() => {
+                  setShowAuthModal(true);
+                  setIsMenuOpen(false);
+                }}
+              >
+                <User className="h-4 w-4 mr-2" />
+                Sign In
               </Button>
+              )}
             </div>
           </div>
         )}
       </div>
     </nav>
+    
+    <AuthModal 
+      isOpen={showAuthModal} 
+      onClose={() => setShowAuthModal(false)}
+      onSuccess={() => setShowAuthModal(false)}
+    />
+    </>
   );
 };

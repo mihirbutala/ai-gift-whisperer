@@ -6,6 +6,9 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { geminiService } from "@/services/gemini";
 import { toast } from "@/components/ui/sonner";
+import { useAuth } from "@/hooks/useAuth";
+import { useSearchTracking } from "@/hooks/useSearchTracking";
+import { AuthModal } from "@/components/AuthModal";
 
 interface GiftRecommendation {
   title: string;
@@ -24,9 +27,19 @@ export const AIGiftSearch = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<GiftRecommendation[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  
+  const { isAuthenticated } = useAuth();
+  const { canSearch, recordSearch, requiresAuth } = useSearchTracking();
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
+    
+    // Check if authentication is required
+    if (requiresAuth) {
+      setShowAuthModal(true);
+      return;
+    }
     
     setIsLoading(true);
     setError(null);
@@ -41,6 +54,9 @@ export const AIGiftSearch = () => {
       
       const recommendations = await geminiService.generateGiftRecommendations(modifiedQuery);
       console.log('Received recommendations:', recommendations);
+      
+      // Record the search
+      await recordSearch(searchQuery, 'ai_search');
       
       setResults(recommendations);
       toast.success(`Found ${recommendations.length} Gemini AI-powered gift recommendations!`);
@@ -84,7 +100,7 @@ export const AIGiftSearch = () => {
         
         <Button 
           onClick={handleSearch} 
-          disabled={!searchQuery.trim() || isLoading}
+          disabled={!searchQuery.trim() || isLoading || (!canSearch && !isAuthenticated)}
           variant="hero"
           className="w-full"
         >
@@ -92,6 +108,11 @@ export const AIGiftSearch = () => {
             <>
               <Sparkles className="h-4 w-4 animate-spin" />
               Gemini AI is analyzing your request...
+            </>
+          ) : requiresAuth ? (
+            <>
+              <Sparkles className="h-4 w-4" />
+              Sign In to Continue Searching
             </>
           ) : (
             <>
@@ -228,5 +249,12 @@ export const AIGiftSearch = () => {
         </Card>
       )}
     </div>
+    
+    <AuthModal 
+      isOpen={showAuthModal} 
+      onClose={() => setShowAuthModal(false)}
+      onSuccess={() => setShowAuthModal(false)}
+    />
+    </>
   );
 };

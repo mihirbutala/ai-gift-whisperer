@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { User, Session } from '@supabase/supabase-js'
 import { supabase } from '@/lib/supabase'
+import { toast } from '@/components/ui/sonner'
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null)
@@ -31,13 +32,6 @@ export const useAuth = () => {
       // Create/update user profile on auth state change
       if (session?.user) {
         createOrUpdateUserProfile(session.user)
-        // Show success message for OAuth sign-ins
-        if (_event === 'SIGNED_IN' && session.user.app_metadata.provider === 'google') {
-          // Use a timeout to ensure the UI has updated
-          setTimeout(() => {
-            console.log('Google sign-in successful')
-          }, 100)
-        }
       }
     })
 
@@ -62,11 +56,81 @@ export const useAuth = () => {
       console.error('Error in createOrUpdateUserProfile:', error)
     }
   }
+
+  const signUp = async (email: string, password: string, fullName?: string) => {
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName
+          }
+        }
+      })
+
+      if (error) throw error
+
+      if (data.user && !data.session) {
+        toast.success('Please check your email for verification link')
+      } else {
+        toast.success('Account created successfully!')
+      }
+
+      return { data, error: null }
+    } catch (error: any) {
+      console.error('Sign up error:', error)
+      toast.error(error.message || 'Failed to create account')
+      return { data: null, error }
+    }
+  }
+
+  const signIn = async (email: string, password: string) => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+
+      if (error) throw error
+
+      toast.success('Welcome back!')
+      return { data, error: null }
+    } catch (error: any) {
+      console.error('Sign in error:', error)
+      toast.error(error.message || 'Failed to sign in')
+      return { data: null, error }
+    }
+  }
+
+  const signInWithGoogle = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}`
+        }
+      })
+
+      if (error) throw error
+
+      return { data, error: null }
+    } catch (error: any) {
+      console.error('Google sign in error:', error)
+      toast.error(error.message || 'Failed to sign in with Google')
+      return { data: null, error }
+    }
+  }
+
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) {
-      console.error('Error signing out:', error)
-      throw error
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+      
+      toast.success('Signed out successfully')
+    } catch (error: any) {
+      console.error('Sign out error:', error)
+      toast.error(error.message || 'Failed to sign out')
     }
   }
 
@@ -74,6 +138,9 @@ export const useAuth = () => {
     user,
     session,
     loading,
+    signUp,
+    signIn,
+    signInWithGoogle,
     signOut,
     isAuthenticated: !!user
   }

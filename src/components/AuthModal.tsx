@@ -5,8 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Mail, Eye, EyeOff, Loader2, User } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
-import { toast } from '@/components/ui/sonner'
+import { useAuth } from '@/hooks/useAuth'
 
 interface AuthModalProps {
   isOpen: boolean
@@ -24,53 +23,15 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     fullName: ''
   })
 
-  const getErrorMessage = (error: any) => {
-    if (error?.message?.includes('Invalid login credentials')) {
-      return 'Invalid email or password. Please check your credentials and try again.';
-    }
-    if (error?.message?.includes('User already registered')) {
-      return 'An account with this email already exists. Please sign in instead.';
-    }
-    if (error?.message?.includes('Email not confirmed')) {
-      return 'Please check your email and click the confirmation link before signing in.';
-    }
-    if (error?.message?.includes('Password should be at least 6 characters')) {
-      return 'Password must be at least 6 characters long.';
-    }
-    if (error?.message?.includes('email_provider_disabled')) {
-      return 'Email authentication is currently disabled. Please use Google to sign in.';
-    }
-    return error?.message || 'An unexpected error occurred. Please try again.';
-  };
+  const { signUp, signIn, signInWithGoogle } = useAuth()
 
   const handleGoogleSignIn = async () => {
     setLoading(true)
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          }
-        }
-      })
-      
-      if (error) {
-        const errorMessage = getErrorMessage(error);
-        toast.error(`Failed to sign in with Google: ${errorMessage}`)
-        console.error('Google sign in error:', error)
-      } else {
-        toast.success('Redirecting to Google for authentication...')
-        // Close modal after a short delay to show the success message
-        setTimeout(() => {
-          onClose()
-        }, 1000)
-      }
+      await signInWithGoogle()
+      onSuccess?.()
+      onClose()
     } catch (error) {
-      const errorMessage = getErrorMessage(error);
-      toast.error(`Google Sign In Failed: ${errorMessage}`)
       console.error('Google sign in error:', error)
     } finally {
       setLoading(false)
@@ -79,48 +40,17 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
   const handleEmailSignIn = async () => {
     if (!formData.email || !formData.password) {
-      toast.error('Please fill in email and password')
       return
     }
 
     setLoading(true)
     try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password
-      })
-
-      if (error) {
-        const errorMessage = getErrorMessage(error);
-        toast.error(`Sign In Failed: ${errorMessage}`)
-        // Clear password on error to prevent repeated failed attempts
-        setFormData(prev => ({ ...prev, password: '' }))
-        return
+      const { error } = await signIn(formData.email, formData.password)
+      if (!error) {
+        onSuccess?.()
+        onClose()
       }
-
-      toast.success('Welcome back! You have successfully signed in.')
-      
-      // Create or update user profile
-      const { data: userData } = await supabase.auth.getUser()
-      if (userData.user) {
-        const { error: profileError } = await supabase
-          .from('user_profiles')
-          .upsert({
-            user_id: userData.user.id,
-            email: formData.email,
-            full_name: formData.fullName || null
-          })
-
-        if (profileError) {
-          console.error('Profile upsert error:', profileError)
-        }
-      }
-      
-      onSuccess?.()
-      onClose()
     } catch (error) {
-      const errorMessage = getErrorMessage(error);
-      toast.error(`Sign In Failed: ${errorMessage}`)
       console.error('Sign in error:', error)
     } finally {
       setLoading(false)
@@ -129,44 +59,21 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
   const handleEmailSignUp = async () => {
     if (!formData.email || !formData.password || !formData.fullName) {
-      toast.error('Please fill in all fields')
       return
     }
 
     if (formData.password.length < 6) {
-      toast.error('Password must be at least 6 characters long')
       return
     }
 
     setLoading(true)
     try {
-      const { error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            full_name: formData.fullName
-          }
-        }
-      })
-
-      if (error) {
-        const errorMessage = getErrorMessage(error);
-        toast.error(`Sign Up Failed: ${errorMessage}`)
-        return
+      const { error } = await signUp(formData.email, formData.password, formData.fullName)
+      if (!error) {
+        setActiveTab('signin')
+        setFormData({ email: formData.email, password: '', fullName: '' })
       }
-
-      toast.success('Account created successfully! Please check your email for verification.')
-      
-      // Switch to sign in tab after successful signup
-      setActiveTab('signin')
-      // Clear form
-      setFormData({ email: '', password: '', fullName: '' })
-      
     } catch (error) {
-      const errorMessage = getErrorMessage(error);
-      toast.error(`Sign Up Failed: ${errorMessage}`)
       console.error('Sign up error:', error)
     } finally {
       setLoading(false)
@@ -289,7 +196,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
           </TabsContent>
 
           <TabsContent value="signup" className="space-y-4">
-            {/* Google Sign In for Sign Up */}
+            {/* Google Sign Up */}
             <Button
               onClick={handleGoogleSignIn}
               disabled={loading}
