@@ -153,7 +153,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
                     value={formData.email}
                     onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                     className="pl-10"
-                    disabled={loading}
+                    disabled={true}
                   />
                 </div>
               </div>
@@ -168,13 +168,13 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
                     value={formData.password}
                     onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
                     className="pr-10"
-                    disabled={loading}
+                    disabled={true}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    disabled={loading}
+                    disabled={true}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
@@ -183,14 +183,10 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
               <Button
                 onClick={handleEmailSignIn}
-                disabled={loading || !formData.email || !formData.password}
+                disabled={true}
                 className="w-full"
               >
-                {loading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  'Sign In'
-                )}
+                Email Logins Disabled
               </Button>
             </div>
           </TabsContent>
