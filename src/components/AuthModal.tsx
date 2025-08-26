@@ -105,7 +105,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="signin">Sign In</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            <TabsTrigger value="signup" disabled>Sign Up</TabsTrigger>
           </TabsList>
 
           <TabsContent value="signin" className="space-y-4">
@@ -286,14 +286,10 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
               <Button
                 onClick={handleEmailSignUp}
-                disabled={loading || !formData.email || !formData.password || !formData.fullName}
+                disabled={true}
                 className="w-full"
               >
-                {loading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  'Create Account'
-                )}
+                Email Signups Disabled
               </Button>
             </div>
           </TabsContent>
