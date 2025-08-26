@@ -47,6 +47,8 @@ export const useAuth = () => {
           email: user.email,
           full_name: user.user_metadata?.full_name || user.user_metadata?.name || null,
           updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id'
         })
       
       if (error) {
