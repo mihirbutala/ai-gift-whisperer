@@ -1,417 +1,75 @@
-import { useState } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Mail, Eye, EyeOff, Loader2, User, AlertCircle } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
+// src/hooks/useAuth.ts
+import { useState } from "react";
+import { supabase } from "../supabaseClient";
 
-interface AuthModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSuccess?: () => void
-}
+export function useAuth() {
+  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
-export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
-  const [loading, setLoading] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
-  const [activeTab, setActiveTab] = useState('signin')
-  const [errorMessage, setErrorMessage] = useState('')
-  const [showForgotPassword, setShowForgotPassword] = useState(false)
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-    fullName: ''
-  })
-
-  const { signUp, signIn, signInWithGoogle } = useAuth()
-
-  const { resetPassword } = useAuth()
-
-  const handleGoogleSignIn = async () => {
-    setLoading(true)
-    setErrorMessage('')
+  // ✅ Sign Up
+  const signUp = async (email: string, password: string) => {
+    setLoading(true);
+    setError(null);
     try {
-      await signInWithGoogle()
-      onSuccess?.()
-      onClose()
-    } catch (error) {
-      console.error('Google sign in error:', error)
-      setErrorMessage('Failed to sign in with Google. Please try again.')
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      setUser(data.user);
+      return data;
+    } catch (err: any) {
+      setError(err.message);
+      console.error("Sign up error:", err.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const handleEmailSignIn = async () => {
-    if (!formData.email || !formData.password) {
-      return
-    }
-
-    setLoading(true)
-    setErrorMessage('')
+  // ✅ Sign In
+  const signIn = async (email: string, password: string) => {
+    setLoading(true);
+    setError(null);
     try {
-      const { error } = await signIn(formData.email, formData.password)
-      if (error) {
-        setErrorMessage(error.message)
-      } else {
-        onSuccess?.()
-        onClose()
-      }
-    } catch (error) {
-      console.error('Sign in error:', error)
-      setErrorMessage('An unexpected error occurred. Please try again.')
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (error) throw error;
+
+      setUser(data.user);
+      return data;
+    } catch (err: any) {
+      setError(err.message);
+      console.error("Sign in error:", err.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const handleEmailSignUp = async () => {
-    if (!formData.email || !formData.password || !formData.fullName) {
-      return
-    }
-
-    if (formData.password.length < 6) {
-      return
-    }
-
-    setLoading(true)
-    setErrorMessage('')
+  // ✅ Sign Out
+  const signOut = async () => {
+    setLoading(true);
     try {
-      const { error } = await signUp(formData.email, formData.password, formData.fullName)
-      if (error) {
-        setErrorMessage(error.message)
-      } else {
-        setActiveTab('signin')
-        setFormData({ email: formData.email, password: '', fullName: '' })
-      }
-    } catch (error) {
-      console.error('Sign up error:', error)
-      setErrorMessage('An unexpected error occurred. Please try again.')
+      await supabase.auth.signOut();
+      setUser(null);
+    } catch (err: any) {
+      console.error("Sign out error:", err.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const handleForgotPassword = async () => {
-    if (!formData.email) {
-      setErrorMessage('Please enter your email address first')
-      return
-    }
-
-    setLoading(true)
-    setErrorMessage('')
-    try {
-      const { error } = await resetPassword(formData.email)
-      if (error) {
-        setErrorMessage(error.message)
-      } else {
-        setShowForgotPassword(false)
-        setErrorMessage('')
-      }
-    } catch (error) {
-      console.error('Forgot password error:', error)
-      setErrorMessage('An unexpected error occurred. Please try again.')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const resetForm = () => {
-    setFormData({
-      email: '',
-      password: '',
-      fullName: ''
-    })
-    setShowPassword(false)
-    setActiveTab('signin')
-    setErrorMessage('')
-    setShowForgotPassword(false)
-  }
-
-  const handleClose = () => {
-    resetForm()
-    onClose()
-  }
-
-  const handleTabChange = (value: string) => {
-    setActiveTab(value)
-    setErrorMessage('')
-    setShowForgotPassword(false)
-  }
-
-  return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-center">Welcome to supergifter.ai</DialogTitle>
-        </DialogHeader>
-
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="signin">Sign In</TabsTrigger>
-            <TabsTrigger value="signup">Sign Up</TabsTrigger>
-          </TabsList>
-
-          {errorMessage && (
-            <div className="flex items-center gap-2 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
-              <AlertCircle className="h-4 w-4 flex-shrink-0" />
-              <span>{errorMessage}</span>
-            </div>
-          )}
-
-          <TabsContent value="signin" className="space-y-4">
-            {/* Google Sign In */}
-            <Button
-              onClick={handleGoogleSignIn}
-              disabled={loading}
-              variant="outline"
-              className="w-full"
-            >
-              {loading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                  </svg>
-                  Continue with Google
-                </>
-              )}
-            </Button>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or</span>
-              </div>
-            </div>
-
-            {/* Email Sign In Form */}
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="signin-email">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="signin-email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    className="pl-10"
-                    disabled={loading}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="signin-password">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="signin-password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Enter your password"
-                    value={formData.password}
-                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                    className="pr-10"
-                    disabled={loading}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    disabled={loading}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <Button
-                onClick={handleEmailSignIn}
-                disabled={!formData.email || !formData.password || loading}
-                className="w-full"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Signing In...
-                  </>
-                ) : (
-                  'Sign In'
-                )}
-              </Button>
-
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={() => setShowForgotPassword(true)}
-                  className="text-sm text-muted-foreground hover:text-primary underline"
-                  disabled={loading}
-                >
-                  Forgot your password?
-                </button>
-              </div>
-
-              {showForgotPassword && (
-                <div className="space-y-3 p-4 bg-muted/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground">
-                    Enter your email address and we'll send you a link to reset your password.
-                  </p>
-                  <Button
-                    onClick={handleForgotPassword}
-                    disabled={!formData.email || loading}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    {loading ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        Sending...
-                      </>
-                    ) : (
-                      'Send Reset Email'
-                    )}
-                  </Button>
-                  <button
-                    type="button"
-                    onClick={() => setShowForgotPassword(false)}
-                    className="text-sm text-muted-foreground hover:text-primary underline w-full"
-                    disabled={loading}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              )}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="signup" className="space-y-4">
-            {/* Google Sign Up */}
-            <Button
-              onClick={handleGoogleSignIn}
-              disabled={loading}
-              variant="outline"
-              className="w-full"
-            >
-              {loading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  <svg className="h-4 w-4 mr-2" viewBox="0 0 24 24">
-                    <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                    <path fill="currentColor" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                    <path fill="currentColor" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                    <path fill="currentColor" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                  </svg>
-                  Continue with Google
-                </>
-              )}
-            </Button>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t" />
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-background px-2 text-muted-foreground">Or</span>
-              </div>
-            </div>
-
-            {/* Email Sign Up Form */}
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="signup-name">Full Name</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="signup-name"
-                    type="text"
-                    placeholder="Enter your full name"
-                    value={formData.fullName}
-                    onChange={(e) => setFormData(prev => ({ ...prev, fullName: e.target.value }))}
-                    className="pl-10"
-                    disabled={loading}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="signup-email">Email</Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="signup-email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={formData.email}
-                    onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                    className="pl-10"
-                    disabled={loading}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="signup-password">Password</Label>
-                <div className="relative">
-                  <Input
-                    id="signup-password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Create a password (min 6 characters)"
-                    value={formData.password}
-                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                    className="pr-10"
-                    disabled={loading}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    disabled={loading}
-                  >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
-              </div>
-
-              <Button
-                onClick={handleEmailSignUp}
-                disabled={!formData.email || !formData.password || !formData.fullName || formData.password.length < 6 || loading}
-                className="w-full"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Creating Account...
-                  </>
-                ) : (
-                  'Create Account'
-                )}
-              </Button>
-
-              <p className="text-xs text-center text-muted-foreground">
-                Already have an account?{' '}
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('signin')}
-                  className="text-primary hover:underline"
-                  disabled={loading}
-                >
-                  Sign in here
-                </button>
-              </p>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </DialogContent>
-    </Dialog>
-  )
+  return {
+    user,
+    error,
+    loading,
+    signUp,
+    signIn,
+    signOut,
+  };
 }
