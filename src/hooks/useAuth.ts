@@ -67,7 +67,7 @@ export const useAuth = () => {
       if (error) {
         console.error("Sign up error:", error.message);
         toast.error(error.message || 'Failed to create account')
-        return { data: null, error }
+        return { error }
       } else {
         console.log("Sign up success:", data);
         toast.success('Account created successfully!')
@@ -90,7 +90,7 @@ export const useAuth = () => {
       if (error) {
         console.error("Sign in error:", error.message);
         toast.error(error.message || 'Failed to sign in')
-        return { data: null, error }
+        return { error }
       } else {
         console.log("Sign in success:", data);
         toast.success('Welcome back!')

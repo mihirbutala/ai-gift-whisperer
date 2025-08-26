@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Mail, Eye, EyeOff, Loader2, User } from 'lucide-react'
+import { Mail, Eye, EyeOff, Loader2, User, AlertCircle } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 
 interface AuthModalProps {
@@ -17,6 +17,7 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [activeTab, setActiveTab] = useState('signin')
+  const [errorMessage, setErrorMessage] = useState('')
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -27,12 +28,14 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
 
   const handleGoogleSignIn = async () => {
     setLoading(true)
+    setErrorMessage('')
     try {
       await signInWithGoogle()
       onSuccess?.()
       onClose()
     } catch (error) {
       console.error('Google sign in error:', error)
+      setErrorMessage('Failed to sign in with Google. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -44,14 +47,18 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     }
 
     setLoading(true)
+    setErrorMessage('')
     try {
       const { error } = await signIn(formData.email, formData.password)
-      if (!error) {
+      if (error) {
+        setErrorMessage(error.message)
+      } else {
         onSuccess?.()
         onClose()
       }
     } catch (error) {
       console.error('Sign in error:', error)
+      setErrorMessage('An unexpected error occurred. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -67,14 +74,18 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     }
 
     setLoading(true)
+    setErrorMessage('')
     try {
       const { error } = await signUp(formData.email, formData.password, formData.fullName)
-      if (!error) {
+      if (error) {
+        setErrorMessage(error.message)
+      } else {
         setActiveTab('signin')
         setFormData({ email: formData.email, password: '', fullName: '' })
       }
     } catch (error) {
       console.error('Sign up error:', error)
+      setErrorMessage('An unexpected error occurred. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -88,11 +99,17 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
     })
     setShowPassword(false)
     setActiveTab('signin')
+    setErrorMessage('')
   }
 
   const handleClose = () => {
     resetForm()
     onClose()
+  }
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value)
+    setErrorMessage('')
   }
 
   return (
@@ -102,11 +119,18 @@ export const AuthModal = ({ isOpen, onClose, onSuccess }: AuthModalProps) => {
           <DialogTitle className="text-center">Welcome to supergifter.ai</DialogTitle>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="signin">Sign In</TabsTrigger>
             <TabsTrigger value="signup">Sign Up</TabsTrigger>
           </TabsList>
+
+          {errorMessage && (
+            <div className="flex items-center gap-2 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <span>{errorMessage}</span>
+            </div>
+          )}
 
           <TabsContent value="signin" className="space-y-4">
             {/* Google Sign In */}
