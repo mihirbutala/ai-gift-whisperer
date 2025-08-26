@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
-import { AuthModal } from "@/components/AuthModal";
+import AuthModal from "@/components/AuthModal";
 import {
   DropdownMenu,
   DropdownMenuContent,

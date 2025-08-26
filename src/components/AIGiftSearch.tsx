@@ -8,7 +8,7 @@ import { geminiService } from "@/services/gemini";
 import { toast } from "@/components/ui/sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useSearchTracking } from "@/hooks/useSearchTracking";
-import { AuthModal } from "@/components/AuthModal";
+import AuthModal from "@/components/AuthModal";
 
 interface GiftRecommendation {
   title: string;
