@@ -1,6 +1,7 @@
 import { Search, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Navigation } from "@/components/Navigation";
+import { SupabaseStatus } from "@/components/SupabaseStatus";
 import { Link } from "react-router-dom";
 
 const Index = () => {
@@ -39,6 +40,15 @@ const Index = () => {
           </div>
         </div>
       </section>
+      
+      {/* Supabase Status Check - Only show in development */}
+      {import.meta.env.DEV && (
+        <section className="py-8">
+          <div className="container mx-auto px-4 lg:px-8 max-w-2xl">
+            <SupabaseStatus />
+          </div>
+        </section>
+      )}
     </div>
   );
 };
