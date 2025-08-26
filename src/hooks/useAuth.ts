@@ -63,19 +63,19 @@ export const useAuth = () => {
         email,
         password,
         options: {
+          emailRedirectTo: undefined,
           data: {
             full_name: fullName
-          }
+          },
+          // Skip email confirmation
+          emailRedirectTo: undefined
         }
       })
 
       if (error) throw error
 
-      if (data.user && !data.session) {
-        toast.success('Please check your email for verification link')
-      } else {
-        toast.success('Account created successfully!')
-      }
+      // Always show success message regardless of email confirmation
+      toast.success('Account created successfully!')
 
       return { data, error: null }
     } catch (error: any) {
