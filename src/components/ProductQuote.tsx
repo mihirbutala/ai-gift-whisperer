@@ -309,15 +309,13 @@ export const ProductQuote = () => {
             </p>
           </div>
         </Card>
-    </>
+      )}
 
       <AuthModal 
         isOpen={showAuthModal} 
         onClose={() => setShowAuthModal(false)}
         onSuccess={() => setShowAuthModal(false)}
       />
-    </>
-  );
-};
+    </div>
   );
 };
