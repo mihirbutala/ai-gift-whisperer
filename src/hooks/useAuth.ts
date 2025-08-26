@@ -44,7 +44,14 @@ export function useAuth() {
       setUser(data.user);
       return data;
     } catch (err: any) {
-      setError(err.message);
+      // Provide more helpful error messages
+      if (err.message === 'Invalid login credentials') {
+        setError('Email or password is incorrect. Please check your credentials or sign up if you don\'t have an account.');
+      } else if (err.message.includes('Email not confirmed')) {
+        setError('Please check your email and click the confirmation link before signing in.');
+      } else {
+        setError(err.message);
+      }
       console.error("Sign in error:", err.message);
     } finally {
       setLoading(false);
