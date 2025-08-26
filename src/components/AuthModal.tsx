@@ -40,6 +40,12 @@ export default function AuthModal() {
 
       {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
 
+      {!isSignUp && (
+        <div className="mb-3 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-700">
+          <strong>New user?</strong> Click "Sign Up" below to create an account first.
+        </div>
+      )}
+
       <button
         onClick={handleAuth}
         disabled={loading}
