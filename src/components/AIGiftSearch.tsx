@@ -247,14 +247,15 @@ export const AIGiftSearch = () => {
             </p>
           </div>
         </Card>
-      )}
-    </div>
-    
-    <AuthModal 
-      isOpen={showAuthModal} 
-      onClose={() => setShowAuthModal(false)}
-      onSuccess={() => setShowAuthModal(false)}
-    />
     </>
+
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={() => setShowAuthModal(false)}
+      />
+    </>
+  );
+};
   );
 };
