@@ -62,22 +62,17 @@ export const useAuth = () => {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: {
-          emailRedirectTo: undefined,
-          data: {
-            full_name: fullName
-          },
-          // Skip email confirmation
-          emailRedirectTo: undefined
-        }
-      })
+      });
 
-      if (error) throw error
-
-      // Always show success message regardless of email confirmation
-      toast.success('Account created successfully!')
-
-      return { data, error: null }
+      if (error) {
+        console.error("Sign up error:", error.message);
+        toast.error(error.message || 'Failed to create account')
+        return { data: null, error }
+      } else {
+        console.log("Sign up success:", data);
+        toast.success('Account created successfully!')
+        return { data, error: null }
+      }
     } catch (error: any) {
       console.error('Sign up error:', error)
       toast.error(error.message || 'Failed to create account')
@@ -89,13 +84,18 @@ export const useAuth = () => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        password
-      })
+        password,
+      });
 
-      if (error) throw error
-
-      toast.success('Welcome back!')
-      return { data, error: null }
+      if (error) {
+        console.error("Sign in error:", error.message);
+        toast.error(error.message || 'Failed to sign in')
+        return { data: null, error }
+      } else {
+        console.log("Sign in success:", data);
+        toast.success('Welcome back!')
+        return { data, error: null }
+      }
     } catch (error: any) {
       console.error('Sign in error:', error)
       toast.error(error.message || 'Failed to sign in')
